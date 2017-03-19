@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="main_tabs">
+        <item>书架</item>
+        <item>书城</item>
+    </string-array>
+</resources>

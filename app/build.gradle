@@ -1,0 +1,57 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.antfortune.freeline'
+apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'org.greenrobot.greendao'
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+    defaultConfig {
+        applicationId "example.tctctc.com.tybookreader"
+        minSdkVersion 16
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    freeline {
+        hack true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:23.4.0'
+    compile 'com.antfortune.freeline:runtime:0.8.6'
+    testCompile 'junit:junit:4.12'
+
+    compile('com.android.support:support-v4:23.4.0') {
+        force = true;
+    }
+    compile 'com.android.support:design:23.4.0'
+    compile 'com.android.support:cardview-v7:23.4.0'
+
+
+    //butterknife依赖注入
+    compile 'com.jakewharton:butterknife:8.2.1'
+    apt 'com.jakewharton:butterknife-compiler:8.2.1'
+
+    //Dagger依赖注入
+    apt "com.google.dagger:dagger-compiler:2.8"
+    compile "com.google.dagger:dagger:2.8"
+
+    //Rx
+    compile 'io.reactivex:rxjava:x.y.z'
+    compile 'io.reactivex:rxandroid:+'
+    //greendao数据库
+    compile 'org.greenrobot:greendao:3.2.0'
+}

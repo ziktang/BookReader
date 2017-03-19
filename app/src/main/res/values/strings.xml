@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">TYBookReader</string>
+    <string name="all_select">全选</string>
+    <string name="all_un_select">全不选</string>
+    <string name="delete">删除</string>
+    <string name="import_shelf">导入书架</string>
+    <string name="scan">立即扫描</string>
+</resources>

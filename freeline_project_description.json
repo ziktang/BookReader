@@ -1,0 +1,130 @@
+{
+    "android_gradle_plugin_version": "2.2.0",
+    "apk_path": "E:\\important\\TYBookReader\\app\\build\\outputs\\apk\\app-debug.apk",
+    "apt": {
+        "app": {
+            "aptArgs": [
+                
+            ],
+            "aptOutput": "E:\\important\\TYBookReader\\app\\build\\generated\\source\\apt\\debug",
+            "disableDiscovery": false,
+            "enabled": true,
+            "processor": null,
+            "processorPath": "E:\\important\\TYBookReader\\app\\build\\intermediates\\exploded-aar\\com.antfortune.freeline\\runtime\\0.8.6\\jars\\classes.jar;E:\\important\\TYBookReader\\app\\build\\intermediates\\exploded-aar\\com.android.support\\animated-vector-drawable\\23.4.0\\jars\\classes.jar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\io.reactivex\\rxjava\\1.1.6\\2586312cd2b8a511e4c6236736f5a039fc0f2273\\rxjava-1.1.6.jar;E:\\important\\TYBookReader\\app\\build\\intermediates\\exploded-aar\\com.android.support\\recyclerview-v7\\23.4.0\\jars\\classes.jar;E:\\important\\TYBookReader\\app\\build\\intermediates\\exploded-aar\\io.reactivex\\rxandroid\\1.2.1\\jars\\classes.jar;E:\\important\\TYBookReader\\app\\build\\intermediates\\exploded-aar\\com.android.support\\appcompat-v7\\23.4.0\\jars\\classes.jar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\javax.inject\\javax.inject\\1\\6975da39a7040257bd51d21a231b76c915872d38\\javax.inject-1.jar;J:\\sdk\\extras\\android\\m2repository\\com\\android\\support\\support-annotations\\24.0.0\\support-annotations-24.0.0.jar;E:\\important\\TYBookReader\\app\\build\\intermediates\\exploded-aar\\com.android.support\\support-vector-drawable\\23.4.0\\jars\\classes.jar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\com.jakewharton\\butterknife-annotations\\8.2.1\\d6f54d76edfbe779a50a8636b10fd3f555d8f780\\butterknife-annotations-8.2.1.jar;E:\\important\\TYBookReader\\app\\build\\intermediates\\exploded-aar\\com.android.support\\design\\23.4.0\\jars\\classes.jar;E:\\important\\TYBookReader\\app\\build\\intermediates\\exploded-aar\\com.android.support\\support-v4\\23.4.0\\jars\\libs\\internal_impl-23.4.0.jar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\com.google.dagger\\dagger\\2.8\\55a1aa1cdcfd06b9950ca856e2bc2790e105146a\\dagger-2.8.jar;E:\\important\\TYBookReader\\app\\build\\intermediates\\exploded-aar\\com.android.support\\cardview-v7\\23.4.0\\jars\\classes.jar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\org.greenrobot\\greendao-api\\3.2.0\\c6d610abe1d75d758431c9234917a349abc0a0ac\\greendao-api-3.2.0.jar;E:\\important\\TYBookReader\\app\\build\\intermediates\\exploded-aar\\com.android.support\\support-v4\\23.4.0\\jars\\classes.jar;E:\\important\\TYBookReader\\app\\build\\intermediates\\exploded-aar\\com.jakewharton\\butterknife\\8.2.1\\jars\\classes.jar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\org.greenrobot\\greendao\\3.2.0\\e70040568b2929b8e5869ad1ffca8e4386dc53bc\\greendao-3.2.0.jar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\com.jakewharton\\butterknife-compiler\\8.2.1\\66193507a52d5bb253b13850f191294ad767bb9\\butterknife-compiler-8.2.1.jar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\com.google.dagger\\dagger-compiler\\2.8\\f8e76f27907d495d16760ffb58e37b3f30859bf\\dagger-compiler-2.8.jar;J:\\sdk\\extras\\android\\m2repository\\com\\android\\support\\appcompat-v7\\23.4.0\\appcompat-v7-23.4.0.aar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\com.antfortune.freeline\\runtime\\0.8.6\\45b7570ab00fadeccfc6132c61066647bff18869\\runtime-0.8.6.aar;J:\\sdk\\extras\\android\\m2repository\\com\\android\\support\\support-v4\\23.4.0\\support-v4-23.4.0.aar;J:\\sdk\\extras\\android\\m2repository\\com\\android\\support\\design\\23.4.0\\design-23.4.0.aar;J:\\sdk\\extras\\android\\m2repository\\com\\android\\support\\cardview-v7\\23.4.0\\cardview-v7-23.4.0.aar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\com.jakewharton\\butterknife\\8.2.1\\e34d6aa04cea3390ed16364599ff6f4f84549c4d\\butterknife-8.2.1.aar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\io.reactivex\\rxandroid\\1.2.1\\78179b876174994f66432947fa15338ba13747a4\\rxandroid-1.2.1.aar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\com.google.auto\\auto-common\\0.6\\cf7212b0f8bfef12657b942df8f4f2cf032d3f41\\auto-common-0.6.jar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\com.google.auto.service\\auto-service\\1.0-rc2\\51033a5b8fcf7039159e35b6878f106ccd5fb35f\\auto-service-1.0-rc2.jar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\com.squareup\\javapoet\\1.7.0\\4fdcf1fc27c1a8f55d1109df986c923152f07759\\javapoet-1.7.0.jar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\com.google.dagger\\dagger-producers\\2.8\\e20b6468f78d342ce8e4191fe4bd01b630bbf6df\\dagger-producers-2.8.jar;C:\\Users\\Administrator\\.gradle\\caches\\modules-2\\files-2.1\\com.google.guava\\guava\\20.0-rc1\\4c2a4581b69b16a57968da32fcadb8e362b639b2\\guava-20.0-rc1.jar;J:\\sdk\\extras\\android\\m2repository\\com\\android\\support\\animated-vector-drawable\\23.4.0\\animated-vector-drawable-23.4.0.aar;J:\\sdk\\extras\\android\\m2repository\\com\\android\\support\\support-vector-drawable\\23.4.0\\support-vector-drawable-23.4.0.aar;J:\\sdk\\extras\\android\\m2repository\\com\\android\\support\\recyclerview-v7\\23.4.0\\recyclerview-v7-23.4.0.aar"
+        }
+    },
+    "apt_libraries": {
+        "dagger": true,
+        "butterknife": true
+    },
+    "auto_dependency": true,
+    "build_cache_dir": "E:\\important\\TYBookReader\\app\\build\\freeline",
+    "build_directory": "E:\\important\\TYBookReader\\app\\build",
+    "build_script": "gradlew.bat :app:assembleDebug",
+    "build_script_work_directory": "",
+    "build_tools_directory": "J:\\sdk\\build-tools\\23.0.3",
+    "build_tools_version": "23.0.3",
+    "check_sources_md5": [
+        
+    ],
+    "compile_sdk_directory": "J:\\sdk\\platforms\\android-23",
+    "compile_sdk_version": "android-23",
+    "databinding": [
+        
+    ],
+    "databinding_compiler_jar": "",
+    "databinding_modules": [
+        
+    ],
+    "debug_package": "example.tctctc.com.tybookreader",
+    "exclude_dep_res_paths": [
+        
+    ],
+    "extra_dep_res_paths": [
+        
+    ],
+    "freeline_cache_dir": "E:\\important\\TYBookReader",
+    "freeline_gradle_plugin_version": "0.8.6",
+    "ignore_resource_ids": [
+        "avd_hide_password_1",
+        "avd_hide_password_2",
+        "avd_hide_password_3",
+        "avd_show_password_1",
+        "avd_show_password_2",
+        "avd_show_password_3"
+    ],
+    "java_home": "J:\\java8\\jdk1.8.0-91",
+    "launcher": "example.tctctc.com.tybookreader.main.MainActivity",
+    "main_assets_directory": [
+        "E:\\important\\TYBookReader\\app\\src\\debug\\assets",
+        "E:\\important\\TYBookReader\\app\\src\\main\\assets"
+    ],
+    "main_jniLibs_directory": [
+        "E:\\important\\TYBookReader\\app\\src\\debug\\jniLibs",
+        "E:\\important\\TYBookReader\\app\\src\\main\\jniLibs"
+    ],
+    "main_jni_directory": [
+        "E:\\important\\TYBookReader\\app\\src\\debug\\jni",
+        "E:\\important\\TYBookReader\\app\\src\\main\\jni"
+    ],
+    "main_manifest_path": "E:\\important\\TYBookReader\\app\\src\\main\\AndroidManifest.xml",
+    "main_project_dir": "app",
+    "main_project_name": "app",
+    "main_r_path": "E:\\important\\TYBookReader\\app\\build\\generated\\source\\r\\debug\\R.java",
+    "main_res_directory": [
+        "E:\\important\\TYBookReader\\app\\src\\debug\\res",
+        "E:\\important\\TYBookReader\\app\\src\\main\\res"
+    ],
+    "main_src_directory": [
+        "E:\\important\\TYBookReader\\app\\src\\debug\\java",
+        "E:\\important\\TYBookReader\\app\\src\\main\\java",
+        "E:\\important\\TYBookReader\\app\\build\\generated\\source\\greendao"
+    ],
+    "module_dependencies": {
+        "app": [
+            
+        ]
+    },
+    "modules": [
+        {
+            "name": "app",
+            "path": "E:\\important\\TYBookReader\\app"
+        }
+    ],
+    "package": "example.tctctc.com.tybookreader",
+    "product_flavor": "",
+    "project_source_sets": {
+        "app": {
+            "main_assets_directory": [
+                "E:\\important\\TYBookReader\\app\\src\\debug\\assets",
+                "E:\\important\\TYBookReader\\app\\src\\main\\assets"
+            ],
+            "main_jniLibs_directory": [
+                "E:\\important\\TYBookReader\\app\\src\\debug\\jniLibs",
+                "E:\\important\\TYBookReader\\app\\src\\main\\jniLibs"
+            ],
+            "main_jni_directory": [
+                "E:\\important\\TYBookReader\\app\\src\\debug\\jni",
+                "E:\\important\\TYBookReader\\app\\src\\main\\jni"
+            ],
+            "main_manifest_path": "E:\\important\\TYBookReader\\app\\src\\main\\AndroidManifest.xml",
+            "main_res_directory": [
+                "E:\\important\\TYBookReader\\app\\src\\debug\\res",
+                "E:\\important\\TYBookReader\\app\\src\\main\\res"
+            ],
+            "main_src_directory": [
+                "E:\\important\\TYBookReader\\app\\src\\debug\\java",
+                "E:\\important\\TYBookReader\\app\\src\\main\\java",
+                "E:\\important\\TYBookReader\\app\\build\\generated\\source\\greendao"
+            ]
+        }
+    },
+    "project_type": "gradle",
+    "retrolambda": {
+        
+    },
+    "root_dir": "E:\\important\\TYBookReader",
+    "sdk_directory": "J:\\sdk",
+    "use_jdk8": true,
+    "use_system_gradle": false
+}

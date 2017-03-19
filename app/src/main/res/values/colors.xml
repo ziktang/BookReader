@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="tab_text_color">#FF7815</color>
+    <color name="tab_bg_color">#FFFFFF</color>
+
+    <color name="light_black">#c4c2c2</color>
+    <color name="black">#000000</color>
+    <color name="gray_black">#999696</color>
+    <color name="light_black2">#f2efef</color>
+    <color name="white">#FFFFFF</color>
+
+    <color name="shelf_bg_color">#ECEDEF</color>
+
+
+</resources>
