@@ -16,4 +16,28 @@
     <color name="shelf_bg_color">#ECEDEF</color>
 
 
+    <!-- 阅读界面 -->
+
+    <color name="bg_black">#1F1D1B</color>
+    <color name="orange">#FF6518</color>
+    <color name="icon_white">#FFFBF7</color>
+
+    <!-- 阅读背景 -->
+    <color name="read_yellow">#CEC29C</color>
+    <color name="read_green">#CCEBCC</color>
+    <color name="read_black">#37342F</color>
+    <color name="read_gray">#D1CEC5</color>
+    <color name="read_blue">#001C27</color>
+
+    <!-- 阅读画布 -->
+    <color name="statusColor">#1F1D1B</color>
+
+    <!-- 阅读字体颜色 -->
+
+    <color name="follow_read_yellow">#2C2C2C</color>
+    <color name="follow_read_green">#2F332D</color>
+    <color name="follow_read_black">#92918C</color>
+    <color name="follow_read_gray">#383429</color>
+
+
 </resources>

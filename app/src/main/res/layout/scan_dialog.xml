@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:gravity="center"
+              android:background="@color/white"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/total_file"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:textSize="20dp"
+        android:layout_weight="1"
+        android:layout_height="80dp"/>
+
+    <TextView
+        android:id="@+id/stop_scan"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="20dp"
+        android:textSize="22dp"
+        android:textColor="@color/white"
+        android:text="停止扫描"
+        android:gravity="center"
+        android:background="@drawable/select_touch"
+        />
+</LinearLayout>

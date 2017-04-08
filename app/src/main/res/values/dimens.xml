@@ -2,4 +2,45 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="padding_20">20dp</dimen>
+    <dimen name="padding_10">10dp</dimen>
+    <dimen name="padding_5">5dp</dimen>
+
+    <dimen name="dialog_padding">15dp</dimen>
+
+
+    <dimen name="text_size_12">12sp</dimen>
+    <dimen name="text_size_14">14sp</dimen>
+    <dimen name="text_size_16">16sp</dimen>
+    <dimen name="text_size_18">18sp</dimen>
+    <dimen name="text_size_20">20sp</dimen>
+    <dimen name="text_size_24">24sp</dimen>
+    <dimen name="status_bar_height">25dp</dimen>
+    <dimen name="operate_text_height">32dp</dimen>
+    <dimen name="bg_color_select_item_radius">42dp</dimen>
+    <dimen name="dialog_marginLeft">16dp</dimen>
+
+    <!-- ***************阅读界面参数*************** -->
+
+
+    <!-- 行间距 -->
+    <dimen name="lineSpace">12dp</dimen>
+    <!-- 字间距 -->
+    <dimen name="fontSpace">1dp</dimen>
+    <!-- 段间距 -->
+    <dimen name="paragraphSpace">16dp</dimen>
+    <!-- 正文与左右边界的距离 -->
+    <dimen name="marginWidth">12dp</dimen>
+    <!-- 正文与上下边界的距离 -->
+    <dimen name="marginHeight">32dp</dimen>
+    <!-- 边界信息距离上下边界的距离 -->
+    <dimen name="marginBorderHeight">4dp</dimen>
+    <!-- 电池宽度 -->
+    <dimen name="btWidth">16dp</dimen>
+    <!-- 电池高度 -->
+    <dimen name="btHeight">8dp</dimen>
+    <!-- 边界信息字体大小 -->
+    <dimen name="borderFontSize">12dp</dimen>
+    <!-- 状态画笔 -->
+    <dimen name="statusFontSize">24dp</dimen>
 </resources>

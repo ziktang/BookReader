@@ -11,13 +11,13 @@ import android.widget.Toast;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import example.tctctc.com.tybookreader.common.Rx.RxManager;
+import example.tctctc.com.tybookreader.common.rx.RxManager;
 
 /**
  * Created by tctctc on 2016/11/25.
  */
 
-public abstract class BaseFragment<P extends BasePresenter> extends Fragment implements View.OnClickListener {
+public abstract class BaseFragment extends Fragment implements View.OnClickListener {
     private View rootView;
     public RxManager mRxManager;
     private Unbinder mUnbinder;

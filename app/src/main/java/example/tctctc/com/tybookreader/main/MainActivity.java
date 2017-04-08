@@ -14,6 +14,7 @@ import example.tctctc.com.tybookreader.R;
 import example.tctctc.com.tybookreader.base.BaseActivity;
 import example.tctctc.com.tybookreader.bookshelf.view.ShelfFragment;
 import example.tctctc.com.tybookreader.bookstore.view.StoreFragment;
+import example.tctctc.com.tybookreader.utils.StatusBarUtils;
 
 public class MainActivity extends BaseActivity {
 
@@ -24,20 +25,15 @@ public class MainActivity extends BaseActivity {
     ViewPager mPager;
 
     private List<Fragment> mFragments;
+    private MainAdapter mAdapter;
 
     @Override
     protected void initView(View contextView) {
-        //全屏设置
-        if (Build.VERSION.SDK_INT >= 21) {
-            View decorView = getWindow().getDecorView();
-            int option = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-            decorView.setSystemUiVisibility(option);
-            getWindow().setStatusBarColor(Color.TRANSPARENT);
-        }
+        StatusBarUtils.setTranslucent(this);
         initData();
         String[] tabs = getResources().getStringArray(R.array.main_tabs);
-        mPager.setAdapter(new MainAdapter(getSupportFragmentManager(),mFragments,tabs));
+        mAdapter = new MainAdapter(getSupportFragmentManager(),mFragments,tabs);
+        mPager.setAdapter(mAdapter);
         mTabLayout.setupWithViewPager(mPager);
     }
 
@@ -60,5 +56,15 @@ public class MainActivity extends BaseActivity {
         mFragments.add(new StoreFragment());
     }
 
+    @Override
+    public void onBackPressed() {
+        if (mAdapter.currentFragment instanceof ShelfFragment){
+            ShelfFragment shelfFragment = (ShelfFragment) mAdapter.currentFragment;
+            if (shelfFragment.onBackPressed()){
 
+            }else {
+                super.onBackPressed();
+            }
+        }
+    }
 }

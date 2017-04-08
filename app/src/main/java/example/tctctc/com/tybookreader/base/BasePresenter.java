@@ -1,7 +1,7 @@
 package example.tctctc.com.tybookreader.base;
 
 import android.content.Context;
-import example.tctctc.com.tybookreader.common.Rx.RxManager;
+import example.tctctc.com.tybookreader.common.rx.RxManager;
 
 /**
  * Created by tctctc on 2016/11/17.

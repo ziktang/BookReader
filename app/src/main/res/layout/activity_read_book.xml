@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<example.tctctc.com.tybookreader.view.CustomDrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <example.tctctc.com.tybookreader.view.ReadPageView
+            android:id="@+id/readPageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorAccent"
+            />
+
+        <include layout="@layout/view_dialog_all"
+            />
+    </RelativeLayout>
+
+
+    <LinearLayout
+        android:layout_width="250dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="left"
+        >
+
+        <fragment
+            android:id="@+id/directory_fragment"
+            android:name="example.tctctc.com.tybookreader.bookshelf.view.DirectoryFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+    </LinearLayout>
+
+
+</example.tctctc.com.tybookreader.view.CustomDrawerLayout>

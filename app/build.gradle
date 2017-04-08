@@ -26,32 +26,28 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.antfortune.freeline:runtime:0.8.6'
     testCompile 'junit:junit:4.12'
-
     compile('com.android.support:support-v4:23.4.0') {
         force = true;
     }
     compile 'com.android.support:design:23.4.0'
     compile 'com.android.support:cardview-v7:23.4.0'
-
-
     //butterknife依赖注入
     compile 'com.jakewharton:butterknife:8.2.1'
     apt 'com.jakewharton:butterknife-compiler:8.2.1'
-
     //Dagger依赖注入
     apt "com.google.dagger:dagger-compiler:2.8"
-    compile "com.google.dagger:dagger:2.8"
-
+    compile 'com.google.dagger:dagger:2.8'
     //Rx
     compile 'io.reactivex:rxjava:x.y.z'
     compile 'io.reactivex:rxandroid:+'
     //greendao数据库
     compile 'org.greenrobot:greendao:3.2.0'
+    compile files('lib/juniversalchardet-1.0.3.jar')
 }

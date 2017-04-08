@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="42dp"
+              android:layout_height="42dp"
+              android:orientation="vertical"
+              android:padding="8dp"
+    >
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <example.tctctc.com.tybookreader.view.CircleView
+        android:id="@+id/bgImg"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        app:type="@string/circle"
+        app:color="@color/orange"
+        android:visibility="invisible"
+        />
+
+    <example.tctctc.com.tybookreader.view.CircleColorView
+        android:id="@+id/bgColor"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        app:type="@string/circle"
+        app:color="@color/orange"
+        android:visibility="invisible"
+        />
+</RelativeLayout>
+</LinearLayout>

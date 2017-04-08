@@ -4,4 +4,38 @@
         <item>书架</item>
         <item>书城</item>
     </string-array>
+
+
+    <!-- 阅读界面侧滑栏 -->
+    <string-array name="read_drawer">
+        <item name="directory">目录</item>
+        <item name="mark">书签</item>
+        <item name="note">笔记</item>
+    </string-array>
+
+    <!--<integer-array name="read_bg_color">-->
+    <!--<item>#CEC29C</item>-->
+    <!--<item>#CEC29C</item>-->
+    <!--<item>#CEC29C</item>-->
+    <!--<item>#CEC29C</item>-->
+    <!--<item>#CEC29C</item>-->
+
+    <!--&lt;!&ndash;-->
+    <!--<item>@color/read_yellow</item>-->
+    <!--<item>@color/read_black</item>-->
+    <!--<item>@color/read_blue</item>-->
+    <!--<item>@color/read_gray</item>-->
+    <!--<item>@color/read_green</item>&ndash;&gt;-->
+    <!--</integer-array>-->
+
+    <!--<integer-array name="read_bg_img">-->
+    <!--<item>@drawable/reading__reading_themes_vine_green</item>-->
+    <!--&lt;!&ndash;   <item>@drawable/reading__reading_themes_vine_green</item>-->
+    <!--<item>@drawable/reading__reading_themes_vine_grey</item>-->
+    <!--<item>@drawable/reading__reading_themes_vine_paper</item>-->
+    <!--<item>@drawable/reading__reading_themes_vine_white</item>-->
+    <!--<item>@drawable/reading__reading_themes_vine_yellow1</item>&ndash;&gt;-->
+    <!--</integer-array>-->
+
+
 </resources>

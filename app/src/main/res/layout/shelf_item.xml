@@ -5,11 +5,11 @@
     android:layout_height="140dp"
     >
     <!--<ImageView-->
-        <!--android:id="@+id/cover2"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="140dp"-->
-        <!--android:src="@drawable/general__shared__txt"-->
-        <!--/>-->
+    <!--android:id="@+id/cover2"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="140dp"-->
+    <!--android:src="@drawable/general__shared__txt"-->
+    <!--/>-->
 
     <ImageView
         android:id="@+id/cover1"
@@ -23,32 +23,33 @@
         android:id="@+id/normal"
         android:layout_width="18dp"
         android:layout_height="18dp"
-        android:layout_marginTop="8dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:visibility="invisible"
+        android:layout_marginTop="8dp"
         android:src="@drawable/general__shared__multi_checkbox_normal"
+        android:visibility="invisible"
         />
 
-        <ImageView
+    <ImageView
         android:id="@+id/checked"
         android:layout_width="18dp"
         android:layout_height="18dp"
-        android:layout_marginTop="8dp"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:visibility="invisible"
+        android:layout_marginTop="8dp"
         android:src="@drawable/general__shared__small_checkbox_checked"
+        android:visibility="invisible"
         />
-
-
 
     <TextView
         android:id="@+id/bookName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
         android:layout_marginTop="30dp"
+        android:gravity="center_horizontal"
+        android:padding="10dp"
+        android:textColor="@color/white"
+        android:textSize="12dp"
         />
 
 </RelativeLayout>

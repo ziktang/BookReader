@@ -3,8 +3,6 @@ package example.tctctc.com.tybookreader.base;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Color;
-import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,13 +12,12 @@ import android.view.Window;
 import android.widget.Toast;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import example.tctctc.com.tybookreader.common.Rx.RxManager;
+import example.tctctc.com.tybookreader.common.rx.RxManager;
 
 public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener {
 
     /**  日志标志  **/
     protected final String TAG = this.getClass().getSimpleName();
-
     /**  是否设置沉浸式状态栏  **/
     private boolean isSteepStatusBar = true;
     /**  是否允许全屏  **/
@@ -30,11 +27,11 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
     /**  Activity的试图  **/
     private View mContextView;
 
-    private RxManager mRxManager;
+    public RxManager mRxManager;
 
     private Unbinder mUnbinder;
 
-    private Context mContext;
+    public Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

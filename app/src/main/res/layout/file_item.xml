@@ -5,7 +5,7 @@
                 android:layout_marginTop="2dp"
                 android:padding="15dp"
                 android:clickable="true"
-                android:background="@drawable/file_item_click"
+                android:background="@drawable/item_click"
     >
 
     <LinearLayout

@@ -5,4 +5,14 @@
     <string name="delete">删除</string>
     <string name="import_shelf">导入书架</string>
     <string name="scan">立即扫描</string>
+    <string name="str_pre_chapter">上一章</string>
+    <string name="str_next_chapter">下一章</string>
+    <string name="str_default">默认</string>
+
+
+    <!-- 自定义属性值 -->
+    <string name="round">round</string>
+    <string name="circle">circle</string>
+
+
 </resources>

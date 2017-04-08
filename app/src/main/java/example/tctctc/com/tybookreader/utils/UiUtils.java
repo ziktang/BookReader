@@ -3,6 +3,8 @@ package example.tctctc.com.tybookreader.utils;
 
 import android.content.Context;
 import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.WindowManager;
 
 public class UiUtils {
@@ -21,19 +23,23 @@ public class UiUtils {
         return dm.heightPixels;
     }
 
-    static public int dipToPx(Context context, int dip) {
-        return (int) (dip * getScreenDensity(context) + 0.5f);
-    }
+//    static public int dipToPx(Context context, int dip) {
+//        return (int) (dip * getScreenDensity(context) + 0.5f);
+//    }
+//
+//    static public float getScreenDensity(Context context) {
+//        try {
+//            DisplayMetrics dm = new DisplayMetrics();
+//            ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
+//                    .getMetrics(dm);
+//            return dm.density;
+//        } catch (Exception e) {
+//            return DisplayMetrics.DENSITY_DEFAULT;
+//        }
+//    }
 
-    static public float getScreenDensity(Context context) {
-        try {
-            DisplayMetrics dm = new DisplayMetrics();
-            ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
-                    .getMetrics(dm);
-            return dm.density;
-        } catch (Exception e) {
-            return DisplayMetrics.DENSITY_DEFAULT;
-        }
+    public static float dpToPx(Context context, float dp) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, context.getResources().getDisplayMetrics());
     }
 
 }

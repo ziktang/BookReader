@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="120dp"
+              android:background="@color/bg_black"
+              android:padding="16dp"
+              android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginRight="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        >
+
+        <SeekBar
+            android:id="@+id/bright_bar"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            />
+
+        <TextView
+            android:id="@+id/default_light"
+            android:layout_width="60dp"
+            android:layout_height="@dimen/operate_text_height"
+            android:layout_marginLeft="20dp"
+            android:background="@drawable/dialog_button_un_select_shape"
+            android:gravity="center"
+            android:text="系统"
+            android:textColor="@color/icon_white"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        >
+
+        <example.tctctc.com.tybookreader.view.CircleView
+            android:id="@+id/pager_bg"
+            android:layout_width="@dimen/bg_color_select_item_radius"
+            android:layout_height="@dimen/bg_color_select_item_radius"
+            app:mBorderColor="@color/white"
+            app:mBorderWidth="0.5dp"
+            app:type="@string/circle"
+            />
+
+        <example.tctctc.com.tybookreader.view.CircleView
+            android:id="@+id/gray_bg"
+            android:layout_width="@dimen/bg_color_select_item_radius"
+            android:layout_height="@dimen/bg_color_select_item_radius"
+            android:layout_marginLeft="@dimen/dialog_marginLeft"
+            app:innerColor="@color/read_gray"
+            app:mBorderColor="@color/white"
+            app:mBorderWidth="0.5dp"
+            app:type="@string/circle"
+            />
+
+        <example.tctctc.com.tybookreader.view.CircleView
+            android:id="@+id/yellow_bg"
+            android:layout_width="@dimen/bg_color_select_item_radius"
+            android:layout_height="@dimen/bg_color_select_item_radius"
+            android:layout_marginLeft="@dimen/dialog_marginLeft"
+            app:innerColor="@color/read_yellow"
+            app:mBorderColor="@color/white"
+            app:mBorderWidth="0.5dp"
+            app:type="@string/circle"
+            />
+
+        <example.tctctc.com.tybookreader.view.CircleView
+            android:id="@+id/green_bg"
+            android:layout_width="@dimen/bg_color_select_item_radius"
+            android:layout_height="@dimen/bg_color_select_item_radius"
+            android:layout_marginLeft="@dimen/dialog_marginLeft"
+            app:innerColor="@color/read_green"
+            app:mBorderColor="@color/white"
+            app:mBorderWidth="0.5dp"
+            app:type="@string/circle"
+            />
+
+
+    </LinearLayout>
+</LinearLayout>

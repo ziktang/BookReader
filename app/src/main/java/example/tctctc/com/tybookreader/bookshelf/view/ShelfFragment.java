@@ -15,20 +15,25 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import butterknife.BindView;
+import butterknife.OnClick;
 import example.tctctc.com.tybookreader.R;
 import example.tctctc.com.tybookreader.base.BaseFragment;
-import example.tctctc.com.tybookreader.bean.Book;
+import example.tctctc.com.tybookreader.bean.BookBean;
 import example.tctctc.com.tybookreader.bookshelf.adapter.ShelfBookAdapter;
+import example.tctctc.com.tybookreader.bookshelf.contact.ShelfContact;
+import example.tctctc.com.tybookreader.bookshelf.model.ShelfDao;
+import example.tctctc.com.tybookreader.bookshelf.presenter.ShelfPresenter;
 import example.tctctc.com.tybookreader.common.view.GridSpacingItemDecoration;
+import example.tctctc.com.tybookreader.utils.CustomUUId;
 
 /**
  * Created by tctctc on 2017/3/18.
  */
 
-public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnClickCallBack {
-
+public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnClickCallBack, ShelfContact.View {
 
 
     @BindView(R.id.bookRecycle)
@@ -45,14 +50,16 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
 
     @BindView(R.id.book_all_select)
     TextView mBookAllSelect;
-    private ShelfBookAdapter adapter;
-    private List<Book> books;
+
+    private ShelfBookAdapter mAdapter;
+    private List<BookBean> mBooks;
+
+    private List<BookBean> mSelectBooks;
+
+    private ShelfPresenter mPresenter;
 
     @Override
     protected void initView() {
-        mAddBookBt.setOnClickListener(this);
-        mBookDelete.setOnClickListener(this);
-        mBookAllSelect.setOnClickListener(this);
     }
 
     @Override
@@ -63,16 +70,19 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        books = new ArrayList<>();
-        for (int i = 1; i <= 10; i++) {
-            books.add(new Book("书本" + i));
-        }
-        adapter = new ShelfBookAdapter(books, getActivity(), this);
+        mBooks = new ArrayList<>();
+        mAdapter = new ShelfBookAdapter(mBooks, getActivity(), this);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getContext(), 3);
         mBookRecycle.setLayoutManager(layoutManager);
-        mBookRecycle.setAdapter(adapter);
+        mBookRecycle.setAdapter(mAdapter);
         mBookRecycle.setLongClickable(true);
         mBookRecycle.addItemDecoration(new GridSpacingItemDecoration(3, 80, true));
+
+        mSelectBooks = new ArrayList<>();
+        mPresenter = new ShelfPresenter();
+        mPresenter.setVM(new ShelfDao(), this);
+        mPresenter.onLoadBookList();
+
     }
 
     @Override
@@ -82,70 +92,100 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
     }
 
     @Override
-    public void changeStatus(boolean isAllSelect) {
-        if (adapter.isAllSelect()) {
-            mBookAllSelect.setText("全不选");
-        } else {
-            mBookAllSelect.setText("全选");
+    public void OnBookClick(BookBean bookBean) {
+        Intent intent = new Intent(getActivity(),ReadBookActivity.class);
+        intent.putExtra("book",bookBean);
+        startActivity(intent);
+    }
+
+    @Override
+    public void selectBook(BookBean bookBean) {
+        if (!mSelectBooks.contains(bookBean))
+            mSelectBooks.add(bookBean);
+        mBookDelete.setText("删除书籍(" + mSelectBooks.size() + ")");
+        if (mSelectBooks.size() == mBooks.size()) {
+            mBookAllSelect.setText(getResources().getString(R.string.all_un_select));
         }
     }
 
     @Override
+    public void unSelectBook(BookBean bookBean) {
+        if (mSelectBooks.contains(bookBean))
+            mSelectBooks.remove(bookBean);
+        mBookDelete.setText("删除书籍(" + mSelectBooks.size() + ")");
+        if (mSelectBooks.size() < mBooks.size()) {
+            mBookAllSelect.setText(getResources().getString(R.string.all_select));
+        }
+    }
+
+    @OnClick({R.id.book_delete, R.id.book_all_select, R.id.add_book})
+    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.book_delete:
-                deleteBook(adapter.getBookMap());
-                showToast("删除");
+                mPresenter.onDeleteBooks(mSelectBooks);
                 break;
             case R.id.book_all_select:
-                allSelectBook(adapter.getBookMap());
-                showToast("全选");
+                allSelectBook(mAdapter.getBookMap());
                 break;
             case R.id.add_book:
-                Intent intent = new Intent(getActivity(),ImportBookActivity.class);
+                Intent intent = new Intent(getActivity(), ImportBookActivity.class);
                 getActivity().startActivity(intent);
                 break;
         }
     }
 
-    private void allSelectBook(HashMap<Book, Integer> bookMap) {
+    private void allSelectBook(HashMap<BookBean, Integer> bookMap) {
         //本来是全不选状态,此时按钮应该显示的是全选，所以点击之后变成全不选
-        if (!adapter.isAllSelect()) {
-            for (Map.Entry<Book, Integer> entry : bookMap.entrySet()) {
+        if (mSelectBooks.size() != mBooks.size()) {
+            for (Map.Entry<BookBean, Integer> entry : bookMap.entrySet()) {
                 if (entry.getValue() == 2) {
                     entry.setValue(1);
+                    selectBook(entry.getKey());
                 }
             }
-            mBookAllSelect.setText("全不选");
-            adapter.setAllSelect(true);
         }
         //本来是全选状态,此时按钮应该显示的是全不选，所以点击之后变成全选
-        else if (adapter.isAllSelect()) {
-            for (Map.Entry<Book, Integer> entry : bookMap.entrySet()) {
+        else if (mSelectBooks.size() == mBooks.size()) {
+            for (Map.Entry<BookBean, Integer> entry : bookMap.entrySet()) {
                 if (entry.getValue() == 1) {
                     entry.setValue(2);
+                    unSelectBook(entry.getKey());
                 }
             }
-            mBookAllSelect.setText("全选");
-            adapter.setAllSelect(false);
         }
-        adapter.notifyDataSetChanged();
+        mAdapter.notifyDataSetChanged();
     }
 
-    private void deleteBook(HashMap<Book, Integer> bookMap) {
-        //map在普通遍历时不能执行修改，删除等操作，会引起线程不安全，因此想要达到目的需要用Iterator遍历
-        Iterator<Map.Entry<Book,Integer>> iterator = bookMap.entrySet().iterator();
-        while(iterator.hasNext()){
-            Map.Entry<Book,Integer> entry = iterator.next();
-            if (entry.getValue() == 1) {
-                books.remove(((Book)entry.getKey()));
-                iterator.remove();
-            }
-        }
-        adapter.dataInit();
-        adapter.notifyDataSetChanged();
+    @Override
+    public void refreshBookList(List<BookBean> books) {
+        mBooks.clear();
+        mBooks.addAll(books);
+        exitLongClick();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mPresenter != null)
+            mPresenter.onDestroy();
+        mPresenter = null;
+    }
+
+    public void exitLongClick(){
+        mAdapter.statusInit();
         mBookOperate.setVisibility(View.INVISIBLE);
         mBookAllSelect.setText("全选");
         mAddBookBt.setVisibility(View.VISIBLE);
+        mAdapter.notifyDataSetChanged();
+    }
+
+    public boolean onBackPressed(){
+        if (mAdapter.isLongClick()){
+            mAdapter.statusInit();
+            exitLongClick();
+            return true;
+        }
+        else return false;
     }
 }

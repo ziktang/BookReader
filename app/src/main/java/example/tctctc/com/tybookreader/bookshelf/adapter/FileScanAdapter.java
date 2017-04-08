@@ -12,7 +12,9 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 
 import example.tctctc.com.tybookreader.R;
 import example.tctctc.com.tybookreader.utils.FileUtils;
@@ -31,19 +33,14 @@ public class FileScanAdapter extends RecyclerView.Adapter<FileScanAdapter.FileVi
     private FileScanAdapter.OnClickCallBack mBack;
 
     //位置和状态 1 选中状态  2未选中状态
-    private HashMap<File, Integer> mHashMap;
-
-    //是否处于全选状态
-    private boolean isAllSelect;
-    //已选择的数量
-    private int selectedNum;
-    private int fileTotal;
+    private HashMap<File, Integer> mFileMap;
 
     public interface OnClickCallBack {
-        //点击选择，恰好达到全不选或者全选,或者隐藏
-        void changeStatus(boolean isAllSelect);
 
         void clickFolder(File file);
+
+        void selectFile(File file);
+        void unSelectFile(File file);
     }
 
     public FileScanAdapter(List<File> mFiles, Context context, FileScanAdapter.OnClickCallBack mBack) {
@@ -51,6 +48,7 @@ public class FileScanAdapter extends RecyclerView.Adapter<FileScanAdapter.FileVi
         this.mContext = context;
         this.mBack = mBack;
         mInflater = LayoutInflater.from(context);
+        dataInit();
     }
 
     @Override
@@ -61,72 +59,50 @@ public class FileScanAdapter extends RecyclerView.Adapter<FileScanAdapter.FileVi
 
     @Override
     public void onBindViewHolder(final FileViewHolder holder, final int position) {
-
+        final File file = mFiles.get(position);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File file = mFiles.get(position);
+
                 if (file.isFile()) {
-                    select(holder, position);
-                }else{
+                    select(file, position);
+                } else {
                     mBack.clickFolder(file);
                 }
             }
         });
-        holder.setData(mFiles.get(position));
+        holder.setData(file);
     }
 
-    private void select(FileViewHolder holder, Integer position) {
-        File file = mFiles.get(position);
-        if (mHashMap.get(file) == 1) {
-            mHashMap.put(file, 2);
-            selectedNum--;
+    private void select(File file, Integer position) {
+        if (mFileMap.get(file) == 1) {
+            mFileMap.put(file, 2);
+            mBack.unSelectFile(file);
         } else {
-            mHashMap.put(file, 1);
-            selectedNum++;
-        }
-
-        Log.i("aaa","selectedNum"+selectedNum+"--fileTotal:"+fileTotal);
-        if (selectedNum == fileTotal) {
-            isAllSelect = true;
-            mBack.changeStatus(isAllSelect);
-        } else if (selectedNum == 0) {
-            isAllSelect = false;
-            mBack.changeStatus(isAllSelect);
+            mFileMap.put(file, 1);
+            mBack.selectFile(file);
         }
         notifyItemChanged(position);
     }
 
-    public void setAllSelect(boolean allSelect) {
-        isAllSelect = allSelect;
-        if (allSelect) selectedNum = fileTotal;
-        else selectedNum = 0;
-    }
-
     public void dataInit() {
-        fileTotal = 0;
-        selectedNum = 0;
-        mHashMap = new HashMap<>();
-        for (int i = 0; i < mFiles.size(); i++) {
-            if (mFiles.get(i).isFile()) {
-                mHashMap.put(mFiles.get(i), 2);
-                fileTotal++;
+        mFileMap = new HashMap<>();
+        Iterator<File> iterator = mFiles.iterator();
+        while (iterator.hasNext()) {
+            File file = iterator.next();
+            if (file.isFile()) {
+                mFileMap.put(file, 2);
             }
         }
-        isAllSelect = false;
     }
 
     @Override
     public int getItemCount() {
-        return mFiles.size();
-    }
-
-    public boolean isAllSelect() {
-        return isAllSelect;
+        return mFiles==null?0:mFiles.size();
     }
 
     public HashMap<File, Integer> getFileMap() {
-        return mHashMap;
+        return mFileMap;
     }
 
     class FileViewHolder extends RecyclerView.ViewHolder {
@@ -149,16 +125,16 @@ public class FileScanAdapter extends RecyclerView.Adapter<FileScanAdapter.FileVi
             if (file.isFile()) {
                 fileImg.setImageDrawable(mContext.getResources().getDrawable(R.drawable.general__shared__txt_icon));
                 fileInfo.setText(FileUtils.getFileSize(file));
-                if (mHashMap.get(file) == 1){
+                if (mFileMap.get(file) == 1) {
                     normal.setVisibility(View.INVISIBLE);
                     checked.setVisibility(View.VISIBLE);
-                }else {
+                } else {
                     normal.setVisibility(View.VISIBLE);
                     checked.setVisibility(View.INVISIBLE);
                 }
             } else {
                 fileImg.setImageDrawable(mContext.getResources().getDrawable(R.drawable.general__shared__folder_icon));
-                fileInfo.setText(FileUtils.listFiles(file).size() + "项");
+                fileInfo.setText(FileUtils.listFilterOneFolder(file, ".txt").size() + "项");
                 normal.setVisibility(View.INVISIBLE);
                 checked.setVisibility(View.INVISIBLE);
             }

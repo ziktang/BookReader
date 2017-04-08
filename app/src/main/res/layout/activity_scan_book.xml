@@ -1,14 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_scan_book"
+    android:id="@+id/activity_import_book"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="example.tctctc.com.tybookreader.bookshelf.view.ScanBookActivity">
+    android:orientation="vertical"
+    tools:context="example.tctctc.com.tybookreader.bookshelf.view.ImportBookActivity">
 
-</RelativeLayout>
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/scan_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:title="扫描结果"
+        >
+
+    </android.support.v7.widget.Toolbar>
+
+    <TextView
+        android:id="@+id/target_file_num"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:paddingLeft="15dp"
+        android:background="@color/light_black2"
+        />
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/scan_result_recycle"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="0dp">
+
+        </android.support.v7.widget.RecyclerView>
+
+        <LinearLayout
+            android:id="@+id/file_operate"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/colorPrimary"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            >
+
+            <TextView
+                android:id="@+id/book_add"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.5"
+                android:background="@drawable/select_touch"
+                android:gravity="center"
+                android:text="@string/import_shelf"
+                android:textColor="@color/white"
+                android:textSize="16dp"
+
+                />
+
+            <View
+                android:layout_width="0.5dp"
+                android:layout_height="32dp"
+                android:background="@color/colorPrimaryDark"
+                />
+
+            <TextView
+                android:id="@+id/book_all_select"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="0.5"
+                android:background="@drawable/select_touch"
+                android:gravity="center"
+                android:text="@string/all_select"
+                android:textColor="@color/white"
+                android:textSize="16dp"
+                />
+        </LinearLayout>
+
+    </LinearLayout>
+</LinearLayout>

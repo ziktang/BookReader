@@ -1,4 +1,4 @@
-package example.tctctc.com.tybookreader.common.Rx;
+package example.tctctc.com.tybookreader.common.rx;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,10 +17,10 @@ import rx.subscriptions.CompositeSubscription;
  */
 public class RxManager {
 
-    private Rxbus mRxbus = Rxbus.get();
+    public Rxbus mRxbus = Rxbus.get();
 
     //管理Rxbus订阅
-    private Map<Object,Observable> mObservableMaps = new HashMap<>();
+    private Map<Object,Observable<?>> mObservableMaps = new HashMap<>();
     //管理Observables-Subscribers订阅
     private CompositeSubscription mCompositeSubscription = new CompositeSubscription();
 
@@ -29,8 +29,8 @@ public class RxManager {
      * @param tag
      * @param action1
      */
-    public void onEvent(Object tag, Action1 action1){
-        Observable observable = mRxbus.register(tag);
+    public <T>void onEvent(Object tag, Action1<T> action1){
+        Observable<T> observable = mRxbus.register(tag);
         mObservableMaps.put(tag,observable);
         mCompositeSubscription.add(observable.observeOn(AndroidSchedulers.mainThread()).subscribe(action1, new Action1<Throwable>() {
             @Override
@@ -56,7 +56,7 @@ public class RxManager {
      */
     public void clear(){
         mCompositeSubscription.unsubscribe();
-        for (Map.Entry<Object, Observable> entry : mObservableMaps.entrySet()) {
+        for (Map.Entry<Object, Observable<?>> entry : mObservableMaps.entrySet()) {
             mRxbus.unRegister(entry.getKey(),entry.getValue());
         }
     }
