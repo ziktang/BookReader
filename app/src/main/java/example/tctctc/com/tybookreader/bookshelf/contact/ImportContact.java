@@ -7,7 +7,8 @@ import example.tctctc.com.tybookreader.base.BaseModel;
 import example.tctctc.com.tybookreader.base.BasePresenter;
 import example.tctctc.com.tybookreader.base.BaseView;
 import example.tctctc.com.tybookreader.bean.BookBean;
-import rx.Observable;
+import example.tctctc.com.tybookreader.bean.ScanBook;
+import io.reactivex.Observable;
 
 /**
  * Created by tctctc on 2017/3/24.
@@ -15,12 +16,12 @@ import rx.Observable;
 
 public interface ImportContact {
     interface View extends BaseView {
-        void showFileList(List<File> files);
+        void showScanBookList(List<ScanBook> files,int fileNum,int importableNum);
         void toShelf();
     }
 
     abstract class Presenter extends BasePresenter<Model, View> {
-        public abstract void onAddBooks(List<File> files);
+        public abstract void onAddBooks(List<ScanBook> files);
         public abstract void onGetFileList(File file);
     }
 

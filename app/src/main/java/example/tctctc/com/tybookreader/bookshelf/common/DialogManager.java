@@ -8,23 +8,15 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.provider.Settings;
-import android.support.v4.view.ViewCompat;
-import android.support.v4.view.ViewPropertyAnimatorListener;
-import android.support.v4.view.ViewPropertyAnimatorUpdateListener;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.LinearInterpolator;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.text.DecimalFormat;
 import java.util.HashMap;
@@ -38,27 +30,26 @@ import example.tctctc.com.tybookreader.BookApplication;
 import example.tctctc.com.tybookreader.R;
 import example.tctctc.com.tybookreader.bean.BookBean;
 import example.tctctc.com.tybookreader.bean.ReadConfigBean;
-import example.tctctc.com.tybookreader.bookshelf.contact.ImportContact;
 import example.tctctc.com.tybookreader.common.rx.RxManager;
+import example.tctctc.com.tybookreader.utils.FontUtils;
 import example.tctctc.com.tybookreader.utils.SelectManager;
-import example.tctctc.com.tybookreader.utils.UiUtils;
 import example.tctctc.com.tybookreader.view.SelectView;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.Consumer;
 
-import static android.R.attr.x;
 import static example.tctctc.com.tybookreader.R.id.directory;
 import static example.tctctc.com.tybookreader.R.id.page_turn;
-import static example.tctctc.com.tybookreader.R.id.read_progress_bar;
 
 /**
  * Created by tctctc on 2017/3/26.
  * Function:
  */
 
-public class DialogManager2 implements PageManager.PageEvent {
+public class DialogManager implements PageManager.PageEvent {
 
-    public static final String TAG = "DialogManager2";
+    public static final String TAG = "DialogManager";
 
-    private static DialogManager2 mDialogManager;
+    private static DialogManager mDialogManager;
     private Context mContext;
     //阅读配置bean
     private ReadConfigBean mConfigBean;
@@ -100,8 +91,7 @@ public class DialogManager2 implements PageManager.PageEvent {
     @BindView(R.id.fontSize_num)
     TextView fontSizeNum;
 
-    private RelativeLayout mLayout;
-
+    private RelativeLayout mBtmView;
 
     private Unbinder mUnbinder;
 
@@ -115,21 +105,21 @@ public class DialogManager2 implements PageManager.PageEvent {
     private RxManager mRxManager;
 
 
-    public static DialogManager2 getInstance(Context context, BookBean bookBean, RelativeLayout rootView) {
+    public static DialogManager getInstance(Context context, BookBean bookBean, RelativeLayout btmView) {
         if (null == mDialogManager) {
-            mDialogManager = new DialogManager2(context, bookBean, rootView);
+            mDialogManager = new DialogManager(context, bookBean, btmView);
         }
         return mDialogManager;
     }
 
-    private DialogManager2(Context context, BookBean bookBean, RelativeLayout rootView) {
+    private DialogManager(Context context, BookBean bookBean, RelativeLayout btmView) {
         mContext = context;
         mBookBean = bookBean;
         mDecimalFormat = new DecimalFormat("#0.0");
-        mTypeface = Typeface.createFromAsset(mContext.getAssets(), "font/iconfont.ttf");
+        mTypeface = FontUtils.getIconfont();
         mConfigBean = new ReadConfig(BookApplication.getContext()).getConfigBean();
-        mUnbinder = ButterKnife.bind(this, rootView);
-        mLayout = rootView;
+        mUnbinder = ButterKnife.bind(this, btmView);
+        mBtmView = btmView;
         mRxManager = new RxManager();
         setBottomDialog();
         setFontDialog(mConfigBean.getFontSize(), mConfigBean.getFontType());
@@ -137,11 +127,11 @@ public class DialogManager2 implements PageManager.PageEvent {
         setPageTurnDialog(mConfigBean.getPageTurn());
     }
 
-    @OnClick({directory, R.id.font, R.id.background, page_turn, R.id.set, R.id.next_chapter, R.id.last_chapter})
+    @OnClick({directory, R.id.font, R.id.background, R.id.page_turn, R.id.set, R.id.next_chapter, R.id.last_chapter})
     public void onBottomClick(View view) {
         switch (view.getId()) {
             //底部一级dialog事件
-            case directory:
+            case R.id.directory:
                 showDirectory();
                 hideBottomDialog();
                 break;
@@ -204,19 +194,19 @@ public class DialogManager2 implements PageManager.PageEvent {
         }
     }
 
-    @OnClick({R.id.default_light, R.id.pager_bg, R.id.gray_bg, R.id.green_bg, R.id.yellow_bg})
+    @OnClick({R.id.default_light, R.id.gray_bg, R.id.green_bg, R.id.yellow_bg,R.id.night_bg,R.id.white_bg})
     public void onBackgroundClick(View view) {
         switch (view.getId()) {
             case R.id.default_light:
                 defaultBright();
                 break;
-            case R.id.pager_bg:
             case R.id.gray_bg:
             case R.id.green_bg:
             case R.id.yellow_bg:
+            case R.id.white_bg:
+            case R.id.night_bg:
                 Integer bgId = mBgSelectManager.select((SelectView) view);
                 if (bgId != null) {
-                    Log.d("aaa", bgId + "");
                     mConfigBean.setBackground(bgId);
                     mPageManager.changeBackground(mConfigBean.getBackground());
                 }
@@ -224,23 +214,27 @@ public class DialogManager2 implements PageManager.PageEvent {
         }
     }
 
-    @OnClick({R.id.turn_no, R.id.turn_cover, R.id.turn_pager, R.id.turn_slide})
+    @OnClick({R.id.turn_no, R.id.turn_cover, R.id.turn_slide})
     public void onPageClick(View view) {
         switch (view.getId()) {
             case R.id.turn_no:
-            case R.id.turn_cover:
             case R.id.turn_pager:
             case R.id.turn_slide:
                 Integer type = mPageSelectManager.select((SelectView) view);
                 if (type != null)
-                    mPageManager.changePageTurn(type);
+                    mRxManager.post("pageTurn", type);
                 break;
         }
     }
 
     //底部一级dialog，目录，字体，背景，翻页，设置
     public void setBottomDialog() {
-        readProgress.setMax((int) mBookBean.getLength() - 1);
+        mRxManager.onEvent("length", new Consumer<Long>() {
+            @Override
+            public void accept(@NonNull Long aLong) throws Exception {
+                readProgress.setMax((int) mBookBean.getLength() - 1);
+            }
+        });
         readProgress.setProgress(mBookBean.getProgress());
         readProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -258,14 +252,16 @@ public class DialogManager2 implements PageManager.PageEvent {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 mReadProgressTv.setVisibility(View.INVISIBLE);
+                Log.d(TAG,"max:"+seekBar.getMax());
+                Log.d(TAG,"progress"+seekBar.getProgress());
                 mPageManager.changeProgress(seekBar.getProgress());
             }
         });
 
-        ((TextView) mBottomll.findViewById(R.id.directory)).setTypeface(mTypeface);
+        ((TextView) mBottomll.findViewById(directory)).setTypeface(mTypeface);
         ((TextView) mBottomll.findViewById(R.id.font)).setTypeface(mTypeface);
         ((TextView) mBottomll.findViewById(R.id.background)).setTypeface(mTypeface);
-        ((TextView) mBottomll.findViewById(R.id.page_turn)).setTypeface(mTypeface);
+        ((TextView) mBottomll.findViewById(page_turn)).setTypeface(mTypeface);
         ((TextView) mBottomll.findViewById(R.id.set)).setTypeface(mTypeface);
     }
 
@@ -324,10 +320,11 @@ public class DialogManager2 implements PageManager.PageEvent {
         });
 
         Map<SelectView, Integer> map = new HashMap<>();
-        map.put((SelectView) mBackgroundll.findViewById(R.id.pager_bg), ReadConfig.BG_PAGER);
+        map.put((SelectView) mBackgroundll.findViewById(R.id.white_bg), ReadConfig.BG_WHITE);
         map.put((SelectView) mBackgroundll.findViewById(R.id.gray_bg), ReadConfig.BG_GRAY);
         map.put((SelectView) mBackgroundll.findViewById(R.id.green_bg), ReadConfig.BG_GREEN);
         map.put((SelectView) mBackgroundll.findViewById(R.id.yellow_bg), ReadConfig.BG_YELLOW);
+        map.put((SelectView) mBackgroundll.findViewById(R.id.night_bg), ReadConfig.BG_NIGHT);
         mBgSelectManager = new SelectManager<>(map);
         mBgSelectManager.select(bgId);
     }
@@ -337,7 +334,6 @@ public class DialogManager2 implements PageManager.PageEvent {
         Map<SelectView, Integer> map = new HashMap<>();
         map.put((SelectView) mPageTurnll.findViewById(R.id.turn_no), ReadConfig.TURN_NO);
         map.put((SelectView) mPageTurnll.findViewById(R.id.turn_cover), ReadConfig.TURN_COVER);
-        map.put((SelectView) mPageTurnll.findViewById(R.id.turn_pager), ReadConfig.TURN_PAPER);
         map.put((SelectView) mPageTurnll.findViewById(R.id.turn_slide), ReadConfig.TURN_SLIDE);
         mPageSelectManager = new SelectManager<>(map);
         mPageSelectManager.select(type);
@@ -398,14 +394,14 @@ public class DialogManager2 implements PageManager.PageEvent {
         showView.measure(0, h);
         int height = showView.getMeasuredHeight();
         ObjectAnimator anim = ObjectAnimator
-                .ofFloat(mLayout, "tc", height, 0)
+                .ofFloat(mBtmView, "tc", height, 0)
                 .setDuration(200);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
 
                 float cVal = (Float) animation.getAnimatedValue();
-                mLayout.setTranslationY(cVal);
+                mBtmView.setTranslationY(cVal);
             }
         });
         anim.start();
@@ -421,14 +417,14 @@ public class DialogManager2 implements PageManager.PageEvent {
         lastll.measure(0, h);
         int height = lastll.getMeasuredHeight();
         ObjectAnimator anim = ObjectAnimator
-                .ofFloat(mLayout, "tc", 0, height)
+                .ofFloat(mBtmView, "tc", 0, height)
                 .setDuration(200);
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
 
                 float cVal = (Float) animation.getAnimatedValue();
-                mLayout.setTranslationY(cVal);
+                mBtmView.setTranslationY(cVal);
             }
         });
 

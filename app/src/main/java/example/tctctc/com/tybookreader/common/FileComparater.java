@@ -5,13 +5,17 @@ import android.util.Log;
 import java.io.File;
 import java.util.Comparator;
 
+import example.tctctc.com.tybookreader.bean.ScanBook;
+
 /**
  * Created by tctctc on 2017/3/20.
  */
 
-public class FileComparater implements Comparator<File> {
+public class FileComparater implements Comparator<ScanBook> {
     @Override
-    public int compare(File lhs, File rhs) {
+    public int compare(ScanBook lhsBook, ScanBook rhsBook) {
+        File lhs = lhsBook.getFile();
+        File rhs = rhsBook.getFile();
         try {
             if (lhs.isFile() && rhs.isFile()) {
                 return lhs.length() > rhs.length() ? -1 : 1;
@@ -24,7 +28,6 @@ public class FileComparater implements Comparator<File> {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Log.i("eee", "compare");
             return 0;
         }
     }

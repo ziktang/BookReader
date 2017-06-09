@@ -78,7 +78,7 @@ public class StatusBarUtils {
      * @param context
      * @return
      */
-    private static int getStatusBarHeight(Context context) {
+    public static int getStatusBarHeight(Context context) {
         int result = 0;
         int resId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
         if (resId > 0) {

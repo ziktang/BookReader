@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <example.tctctc.com.tybookreader.view.CustomDrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/drawer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -15,8 +16,65 @@
             android:id="@+id/readPageView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/colorAccent"
             />
+
+        <RelativeLayout
+            android:id="@+id/titleBar"
+            android:layout_alignParentTop="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="invisible"
+            android:background="@color/bg_black"
+            >
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:gravity="center_vertical"
+                >
+                <TextView
+                    android:id="@+id/back"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:layout_alignParentLeft="true"
+                    android:textSize="24sp"
+                    android:textColor="@color/icon_white"
+                    android:text="&#xe600;"
+                    />
+
+                <TextView
+                    android:id="@+id/search"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:layout_toLeftOf="@+id/mark"
+                    android:padding="10dp"
+                    android:textSize="20sp"
+                    android:textColor="@color/icon_white"
+                    android:text="&#xe602;"
+                    />
+
+                <TextView
+                    android:id="@+id/mark"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="16dp"
+                    android:textColor="@color/icon_white"
+                    android:layout_alignParentRight="true"
+                    android:textSize="24sp"
+                    android:text="&#xe744;"
+                    android:layout_marginTop="2dp"
+                    />
+
+            </RelativeLayout>
+
+
+
+        </RelativeLayout>
 
         <include layout="@layout/view_dialog_all"
             />
@@ -24,16 +82,28 @@
 
 
     <LinearLayout
-        android:layout_width="250dp"
+        android:layout_width="288dp"
         android:layout_height="match_parent"
         android:layout_gravity="left"
+        android:background="@color/white"
+        android:orientation="vertical"
         >
-
-        <fragment
-            android:id="@+id/directory_fragment"
-            android:name="example.tctctc.com.tybookreader.bookshelf.view.DirectoryFragment"
+        <android.support.v4.view.ViewPager
+            android:id="@+id/directory_pager"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            />
+
+        <android.support.design.widget.TabLayout
+            android:id="@+id/directory_tab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tabIndicatorHeight="0dp"
+            app:tabMode="fixed"
+            app:tabSelectedTextColor="@color/tab_text_color"
+            app:tabTextColor="@color/gray_black"
+            />
 
     </LinearLayout>
 

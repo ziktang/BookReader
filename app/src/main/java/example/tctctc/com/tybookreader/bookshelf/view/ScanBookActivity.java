@@ -1,10 +1,13 @@
 package example.tctctc.com.tybookreader.bookshelf.view;
 
+import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
@@ -14,6 +17,7 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -23,11 +27,16 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import example.tctctc.com.tybookreader.R;
 import example.tctctc.com.tybookreader.base.BaseActivity;
+import example.tctctc.com.tybookreader.bean.BookBean;
+import example.tctctc.com.tybookreader.bean.ScanBook;
 import example.tctctc.com.tybookreader.bookshelf.adapter.FileScanAdapter;
 import example.tctctc.com.tybookreader.bookshelf.contact.ScanContact;
-import example.tctctc.com.tybookreader.bookshelf.model.ScanDao;
+import example.tctctc.com.tybookreader.bookshelf.model.BookDao;
 import example.tctctc.com.tybookreader.bookshelf.presenter.ScanPresenter;
+import example.tctctc.com.tybookreader.common.FileComparater;
 import example.tctctc.com.tybookreader.main.MainActivity;
+
+import static android.R.attr.path;
 
 public class ScanBookActivity extends BaseActivity implements FileScanAdapter.OnClickCallBack, ScanContact.View {
 
@@ -49,7 +58,9 @@ public class ScanBookActivity extends BaseActivity implements FileScanAdapter.On
     @BindView(R.id.scan_toolbar)
     Toolbar mToolbar;
 
-    private List<File> mFiles;
+    private boolean isSelectAll;
+
+    private List<ScanBook> mScanBooks;
     private FileScanAdapter mAdapter;
 
     private AlertDialog.Builder mBuilder;
@@ -57,16 +68,22 @@ public class ScanBookActivity extends BaseActivity implements FileScanAdapter.On
     private TextView totalFile;
 
     private ScanPresenter mPresenter;
-    private List<File> mSelectFiles;
+    private List<ScanBook> mSelectFiles;
+    private BookDao mBookDao;
+    private List<BookBean> mBooks;
+    private int importableNum;
+
+    private boolean isScaned;
 
     @Override
     protected void initView(View contextView) {
         setSupportActionBar(mToolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(true);
+        getSupportActionBar().setTitle("扫描书籍");
 
-        mFiles = new ArrayList();
-        mAdapter = new FileScanAdapter(mFiles, this, this);
+        mScanBooks = new ArrayList();
+        mAdapter = new FileScanAdapter(mScanBooks, this, this);
         LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setOrientation(LinearLayoutManager.VERTICAL);
         mScanRecycle.setLayoutManager(manager);
@@ -76,19 +93,25 @@ public class ScanBookActivity extends BaseActivity implements FileScanAdapter.On
         mSelectFiles = new ArrayList<>();
         createScanDialog();
 
-        String path = getIntent().getStringExtra("scanFilePath");
-        File file = new File(path);
-        mPresenter = new ScanPresenter();
-        mPresenter.setVM(new ScanDao(),this);
-        if (file.exists()){
-            mPresenter.onStartScanBooks(file, ".txt");
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!isScaned) {
+            isScaned = true;
+            String path = getIntent().getStringExtra("scanFilePath");
+            File file = new File(path);
+            mPresenter = new ScanPresenter();
+            mPresenter.setVM(new BookDao(), this);
+            if (file.exists()) {
+                mPresenter.onStartScanBooks(file, ".txt");
+            }
         }
     }
 
-
-
-
-//    private void queryFiles() {
+    //    private void queryFiles() {
 //        String[] projection = new String[]{MediaStore.Files.FileColumns._ID,
 //                MediaStore.Files.FileColumns.DATA,
 //                MediaStore.Files.FileColumns.SIZE
@@ -136,7 +159,7 @@ public class ScanBookActivity extends BaseActivity implements FileScanAdapter.On
 
     }
 
-    @OnClick({R.id.book_all_select,R.id.book_add})
+    @OnClick({R.id.book_all_select, R.id.book_add})
     @Override
     public void onViewClick(View view) {
         switch (view.getId()) {
@@ -154,48 +177,50 @@ public class ScanBookActivity extends BaseActivity implements FileScanAdapter.On
     }
 
     private void selectAll() {
-        HashMap<File, Integer> fileMap = mAdapter.getFileMap();
-        Iterator<Map.Entry<File, Integer>> iterator = fileMap.entrySet().iterator();
-        if (mSelectFiles.size() == mFiles.size()) {
+        HashMap<ScanBook, Integer> fileMap = mAdapter.getFileMap();
+        Iterator<Map.Entry<ScanBook, Integer>> iterator = fileMap.entrySet().iterator();
+        if (!isSelectAll) {
             while (iterator.hasNext()) {
-                Map.Entry<File, Integer> entry = iterator.next();
-                entry.setValue(1);
-                selectFile(entry.getKey());
+                Map.Entry<ScanBook, Integer> entry = iterator.next();
+                if (entry.getValue() == 2) {
+                    entry.setValue(1);
+                    selectFile(entry.getKey());
+                }
             }
         } else {
             while (iterator.hasNext()) {
-                Map.Entry<File, Integer> entry = iterator.next();
-                entry.setValue(2);
-                unSelectFile(entry.getKey());
+                Map.Entry<ScanBook, Integer> entry = iterator.next();
+                if (entry.getValue() == 1) {
+                    entry.setValue(2);
+                    unSelectFile(entry.getKey());
+                }
             }
         }
         mAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void clickFolder(File file) {
+    public void clickFolder(ScanBook scanBook) {
     }
 
     @Override
-    public void selectFile(File file) {
-        if (!mSelectFiles.contains(file))
-            mSelectFiles.add(file);
-        mBookAdd.setText("加入书架("+mSelectFiles.size()+")");
-        if (mSelectFiles.size() == mFiles.size()){
+    public void selectFile(ScanBook scanBook) {
+        mSelectFiles.add(scanBook);
+        mBookAdd.setText("加入书架(" + mSelectFiles.size() + ")");
+        if (mSelectFiles.size() == importableNum) {
+            isSelectAll = true;
             mAllSelect.setText(getResources().getString(R.string.all_un_select));
         }
     }
 
     @Override
-    public void unSelectFile(File file) {
-        if (mSelectFiles.contains(file))
-            mSelectFiles.remove(file);
-        mBookAdd.setText("加入书架("+mSelectFiles.size()+")");
-        if (mSelectFiles.size() < mFiles.size()){
+    public void unSelectFile(ScanBook scanBook) {
+        mSelectFiles.remove(scanBook);
+        if (mSelectFiles.size() < importableNum) {
+            isSelectAll = false;
             mAllSelect.setText(getResources().getString(R.string.all_select));
         }
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -232,11 +257,23 @@ public class ScanBookActivity extends BaseActivity implements FileScanAdapter.On
 
         mDialog.setCanceledOnTouchOutside(false);
 
+        mDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_BACK){
+                    Log.i(TAG,"back");
+                    mPresenter.onStopScanBooks();
+                }
+                return false;
+            }
+        });
+
         totalFile = (TextView) view.findViewById(R.id.total_file);
 
         view.findViewById(R.id.stop_scan).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 mPresenter.onStopScanBooks();
             }
         });
@@ -247,36 +284,64 @@ public class ScanBookActivity extends BaseActivity implements FileScanAdapter.On
     @Override
     public void toShelf() {
         startActivity(MainActivity.class);
+        this.finish();
     }
 
     @Override
     public void whenStartScan() {
         mDialog.show();
-        mFileOperate.setVisibility(View.INVISIBLE);
     }
 
     @Override
     public void whenStopScan() {
+        if (mBookDao == null) {
+            mBookDao = new BookDao();
+        }
+        mBooks = mBookDao.loadAll();
+
+        importableNum = 0;
+        for (ScanBook scanBook : mScanBooks) {
+            for (BookBean bookBean : mBooks) {
+                if (bookBean.getPath().equals(scanBook.getFile().getAbsolutePath())) {
+                    scanBook.setImported(true);
+                }
+            }
+
+            if(!scanBook.isImported()){
+                ++importableNum;
+            }
+        }
         mDialog.dismiss();
-        mFileOperate.setVisibility(View.VISIBLE);
+        if (importableNum==0) {
+            mFileOperate.setVisibility(View.INVISIBLE);
+        } else {
+            mFileOperate.setVisibility(View.VISIBLE);
+        }
+
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
-    public void whenScan(File file, int totalNum) {
-        if (file.exists()){
-            mAdapter.getFileMap().put(file, 2);
-            mFiles.add(file);
-            targetFileNum.setText("已扫描到" + mFiles.size() + "书本");
-            mAdapter.notifyItemInserted(mFiles.size());
-        }
+    public void refresh(int totalNum) {
+        targetFileNum.setText("已扫描到" + mScanBooks.size() + "书本");
         totalFile.setText("已扫描文件" + totalNum + "个");
+    }
+
+    @Override
+    public void whenScan(File file) {
+        if (file.exists()) {
+            //是否已经导入
+            ScanBook scanBook = new ScanBook(file, false);
+            mAdapter.getFileMap().put(scanBook, 2);
+            mScanBooks.add(scanBook);
+            Collections.sort(mScanBooks, new FileComparater());
+            mAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mPresenter!=null)
-            mPresenter.onDestroy();
-        mPresenter = null;
+        mPresenter.onDestroy();
     }
 }

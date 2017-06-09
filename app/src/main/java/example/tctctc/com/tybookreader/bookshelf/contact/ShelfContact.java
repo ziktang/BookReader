@@ -6,7 +6,7 @@ import example.tctctc.com.tybookreader.base.BaseModel;
 import example.tctctc.com.tybookreader.base.BasePresenter;
 import example.tctctc.com.tybookreader.base.BaseView;
 import example.tctctc.com.tybookreader.bean.BookBean;
-import rx.Observable;
+import io.reactivex.Observable;
 
 /**
  * Created by tctctc on 2017/3/24.

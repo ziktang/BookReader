@@ -16,7 +16,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import example.tctctc.com.tybookreader.R;
+import example.tctctc.com.tybookreader.bean.ScanBook;
 import example.tctctc.com.tybookreader.utils.FileUtils;
 
 /**
@@ -25,7 +28,7 @@ import example.tctctc.com.tybookreader.utils.FileUtils;
 
 public class FileScanAdapter extends RecyclerView.Adapter<FileScanAdapter.FileViewHolder> {
 
-    private List<File> mFiles;
+    private List<ScanBook> mScanBooks;
     private LayoutInflater mInflater;
     public Context mContext;
 
@@ -33,18 +36,19 @@ public class FileScanAdapter extends RecyclerView.Adapter<FileScanAdapter.FileVi
     private FileScanAdapter.OnClickCallBack mBack;
 
     //位置和状态 1 选中状态  2未选中状态
-    private HashMap<File, Integer> mFileMap;
+    private HashMap<ScanBook, Integer> mFileMap;
 
     public interface OnClickCallBack {
 
-        void clickFolder(File file);
+        void clickFolder(ScanBook scanBook);
 
-        void selectFile(File file);
-        void unSelectFile(File file);
+        void selectFile(ScanBook scanBook);
+
+        void unSelectFile(ScanBook scanBook);
     }
 
-    public FileScanAdapter(List<File> mFiles, Context context, FileScanAdapter.OnClickCallBack mBack) {
-        this.mFiles = mFiles;
+    public FileScanAdapter(List<ScanBook> mScanBooks, Context context, FileScanAdapter.OnClickCallBack mBack) {
+        this.mScanBooks = mScanBooks;
         this.mContext = context;
         this.mBack = mBack;
         mInflater = LayoutInflater.from(context);
@@ -59,86 +63,100 @@ public class FileScanAdapter extends RecyclerView.Adapter<FileScanAdapter.FileVi
 
     @Override
     public void onBindViewHolder(final FileViewHolder holder, final int position) {
-        final File file = mFiles.get(position);
+        final ScanBook scanBook = mScanBooks.get(position);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                if (file.isFile()) {
-                    select(file, position);
+                if (scanBook.getFile().isFile()) {
+                    select(scanBook, position);
                 } else {
-                    mBack.clickFolder(file);
+                    mBack.clickFolder(scanBook);
                 }
             }
         });
-        holder.setData(file);
+        holder.setData(scanBook);
     }
 
-    private void select(File file, Integer position) {
-        if (mFileMap.get(file) == 1) {
-            mFileMap.put(file, 2);
-            mBack.unSelectFile(file);
+    private void select(ScanBook scanBook, Integer position) {
+        if(scanBook.isImported()) return;
+        if (mFileMap.get(scanBook) == 1) {
+            mFileMap.put(scanBook, 2);
+            mBack.unSelectFile(scanBook);
         } else {
-            mFileMap.put(file, 1);
-            mBack.selectFile(file);
+            mFileMap.put(scanBook, 1);
+            mBack.selectFile(scanBook);
         }
         notifyItemChanged(position);
     }
 
     public void dataInit() {
         mFileMap = new HashMap<>();
-        Iterator<File> iterator = mFiles.iterator();
+        Iterator<ScanBook> iterator = mScanBooks.iterator();
         while (iterator.hasNext()) {
-            File file = iterator.next();
-            if (file.isFile()) {
-                mFileMap.put(file, 2);
+            ScanBook scanBook = iterator.next();
+            if (scanBook.getFile().isFile()) {
+                mFileMap.put(scanBook, 2);
             }
         }
     }
 
     @Override
     public int getItemCount() {
-        return mFiles==null?0:mFiles.size();
+        return mScanBooks == null ? 0 : mScanBooks.size();
     }
 
-    public HashMap<File, Integer> getFileMap() {
+    public HashMap<ScanBook, Integer> getFileMap() {
         return mFileMap;
     }
 
     class FileViewHolder extends RecyclerView.ViewHolder {
+        @BindView(R.id.file_img)
         ImageView fileImg;
+
+        @BindView(R.id.fileName)
         TextView fileName;
+        @BindView(R.id.fileInfo)
         TextView fileInfo;
+        @BindView(R.id.normal)
         ImageView normal;
+        @BindView(R.id.checked)
         ImageView checked;
+        @BindView(R.id.isImport)
+        TextView isImported;
 
         public FileViewHolder(View itemView) {
             super(itemView);
-            fileName = (TextView) itemView.findViewById(R.id.fileName);
-            fileInfo = (TextView) itemView.findViewById(R.id.fileInfo);
-            fileImg = (ImageView) itemView.findViewById(R.id.file_img);
-            normal = (ImageView) itemView.findViewById(R.id.normal);
-            checked = (ImageView) itemView.findViewById(R.id.checked);
+            ButterKnife.bind(this, itemView);
         }
 
-        public void setData(File file) {
+        public void setData(ScanBook scanBook) {
+            File file = scanBook.getFile();
+            fileName.setText(file.getName().trim());
             if (file.isFile()) {
                 fileImg.setImageDrawable(mContext.getResources().getDrawable(R.drawable.general__shared__txt_icon));
                 fileInfo.setText(FileUtils.getFileSize(file));
-                if (mFileMap.get(file) == 1) {
-                    normal.setVisibility(View.INVISIBLE);
-                    checked.setVisibility(View.VISIBLE);
+                if (scanBook.isImported()) {
+                    show(View.INVISIBLE, View.INVISIBLE, View.VISIBLE);
+                    return;
+                }
+                if (mFileMap.get(scanBook) == 1) {
+                    show(View.VISIBLE, View.INVISIBLE, View.INVISIBLE);
                 } else {
-                    normal.setVisibility(View.VISIBLE);
-                    checked.setVisibility(View.INVISIBLE);
+                    show(View.INVISIBLE, View.VISIBLE, View.INVISIBLE);
                 }
             } else {
                 fileImg.setImageDrawable(mContext.getResources().getDrawable(R.drawable.general__shared__folder_icon));
                 fileInfo.setText(FileUtils.listFilterOneFolder(file, ".txt").size() + "项");
-                normal.setVisibility(View.INVISIBLE);
-                checked.setVisibility(View.INVISIBLE);
+                show(View.INVISIBLE, View.INVISIBLE, View.INVISIBLE);
             }
-            fileName.setText(file.getName().trim());
+        }
+
+        private void show(int checkedVisible, int normalVisible, int isImportedVisible) {
+            checked.setVisibility(checkedVisible);
+            normal.setVisibility(normalVisible);
+            isImported.setVisibility(isImportedVisible);
         }
     }
+
 }

@@ -18,8 +18,8 @@ public class BookBean implements Serializable {
 
     public static final long serialVersionUID = 1;
 
-    @Id
-    private long bookId;
+    @Id(autoincrement = true)
+    private Long bookId;
     private String bookName;
     private String path;
     private String fileSize;
@@ -30,13 +30,8 @@ public class BookBean implements Serializable {
     private int  mBookType;
     private String charset;
     private int progress;
-
-    public BookBean() {
-        this.bookId = CustomUUId.get().nextId();
-    }
-
-    @Generated(hash = 444344357)
-    public BookBean(long bookId, String bookName, String path, String fileSize,
+    @Generated(hash = 1685938753)
+    public BookBean(Long bookId, String bookName, String path, String fileSize,
             long length, int status, int mBookType, String charset, int progress) {
         this.bookId = bookId;
         this.bookName = bookName;
@@ -48,85 +43,62 @@ public class BookBean implements Serializable {
         this.charset = charset;
         this.progress = progress;
     }
-
-    public long getBookId() {
-        return bookId;
+    @Generated(hash = 269018259)
+    public BookBean() {
     }
-
-    public void setBookId(long bookId) {
+    public Long getBookId() {
+        return this.bookId;
+    }
+    public void setBookId(Long bookId) {
         this.bookId = bookId;
     }
-
     public String getBookName() {
-        return bookName;
+        return this.bookName;
     }
-
     public void setBookName(String bookName) {
         this.bookName = bookName;
     }
-
     public String getPath() {
-        return path;
+        return this.path;
     }
-
     public void setPath(String path) {
         this.path = path;
     }
-
     public String getFileSize() {
-        return fileSize;
+        return this.fileSize;
     }
-
     public void setFileSize(String fileSize) {
         this.fileSize = fileSize;
     }
-
     public long getLength() {
-        return length;
+        return this.length;
     }
-
     public void setLength(long length) {
         this.length = length;
     }
-
     public int getStatus() {
-        return status;
+        return this.status;
     }
-
     public void setStatus(int status) {
         this.status = status;
     }
-
-    public int getBookType() {
-        return mBookType;
-    }
-
-    public void setBookType(int bookType) {
-        mBookType = bookType;
-    }
-
-    public String getCharset() {
-        return charset;
-    }
-
-    public void setCharset(String charset) {
-        this.charset = charset;
-    }
-
-    public int getProgress() {
-        return progress;
-    }
-
-    public void setProgress(int progress) {
-        this.progress = progress;
-    }
-
     public int getMBookType() {
         return this.mBookType;
     }
-
     public void setMBookType(int mBookType) {
         this.mBookType = mBookType;
+    }
+    public String getCharset() {
+        return this.charset;
+    }
+    public void setCharset(String charset) {
+        this.charset = charset;
+    }
+    public int getProgress() {
+        return this.progress;
+    }
+    public void setProgress(int progress) {
+        this.progress = progress;
     }
 }
 

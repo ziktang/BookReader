@@ -2,23 +2,26 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
+              android:background="?android:attr/selectableItemBackground"
               android:orientation="vertical"
               android:paddingLeft="16dp"
-              android:paddingRight="8dp"
-              android:background="@drawable/item_click"
     >
 
     <TextView
         android:id="@+id/chapterName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="20dp"
-        android:paddingBottom="5dp"
+        android:gravity="center_vertical"
+        android:ellipsize="end"
+        android:lines="1"
+        android:paddingBottom="16dp"
+        android:paddingTop="16dp"
+        android:textColor="@color/black"
         />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="0.2dp"
-        android:background="@color/gray_black"
+        android:background="@color/light_black"
         />
 </LinearLayout>

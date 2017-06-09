@@ -4,8 +4,8 @@
                 android:id="@+id/dialog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:clickable="true"
                 android:layout_alignParentBottom="true"
+                android:clickable="true"
     >
 
     <LinearLayout
@@ -53,9 +53,10 @@
             >
 
             <example.tctctc.com.tybookreader.view.CircleView
-                android:id="@+id/pager_bg"
+                android:id="@+id/white_bg"
                 android:layout_width="@dimen/bg_color_select_item_radius"
                 android:layout_height="@dimen/bg_color_select_item_radius"
+                app:innerColor="@color/read_white"
                 app:mBorderColor="@color/white"
                 app:mBorderWidth="0.5dp"
                 app:type="@string/circle"
@@ -89,6 +90,17 @@
                 android:layout_height="@dimen/bg_color_select_item_radius"
                 android:layout_marginLeft="@dimen/dialog_marginLeft"
                 app:innerColor="@color/read_green"
+                app:mBorderColor="@color/white"
+                app:mBorderWidth="0.5dp"
+                app:type="@string/circle"
+                />
+
+            <example.tctctc.com.tybookreader.view.CircleView
+                android:id="@+id/night_bg"
+                android:layout_width="@dimen/bg_color_select_item_radius"
+                android:layout_height="@dimen/bg_color_select_item_radius"
+                android:layout_marginLeft="@dimen/dialog_marginLeft"
+                app:innerColor="@color/read_night"
                 app:mBorderColor="@color/white"
                 app:mBorderWidth="0.5dp"
                 app:type="@string/circle"
@@ -207,13 +219,13 @@
         android:visibility="gone"
         >
 
-        <example.tctctc.com.tybookreader.view.SelectTextView
-            android:id="@+id/turn_pager"
-            style="@style/read_operate_text"
-            android:layout_height="@dimen/operate_text_height"
-            android:background="@drawable/dialog_button_un_select_shape"
-            android:text="仿真"
-            />
+        <!--<example.tctctc.com.tybookreader.view.SelectTextView-->
+        <!--android:id="@+id/turn_pager"-->
+        <!--style="@style/read_operate_text"-->
+        <!--android:layout_height="@dimen/operate_text_height"-->
+        <!--android:background="@drawable/dialog_button_un_select_shape"-->
+        <!--android:text="仿真"-->
+        <!--/>-->
 
         <example.tctctc.com.tybookreader.view.SelectTextView
             android:id="@+id/turn_slide"

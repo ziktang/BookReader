@@ -11,6 +11,7 @@ public class PageTxt {
     //前开后闭 包括start，不包括end
     private int start;
     private int end;
+    private String chapterName;
     private List<String> lines;
 
     public PageTxt(int start, List<String> lines) {
@@ -19,6 +20,14 @@ public class PageTxt {
     }
 
     public PageTxt() {
+    }
+
+    public String getChapterName() {
+        return chapterName;
+    }
+
+    public void setChapterName(String chapterName) {
+        this.chapterName = chapterName;
     }
 
     public int getEnd() {

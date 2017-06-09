@@ -27,9 +27,6 @@ import example.tctctc.com.tybookreader.bean.TxtCache;
 import example.tctctc.com.tybookreader.bookshelf.model.BookDao;
 import example.tctctc.com.tybookreader.utils.FileUtils;
 
-import static android.R.attr.name;
-import static android.R.attr.singleUser;
-
 /**
  * Created by tctctc on 2017/3/28.
  * Function:
@@ -87,8 +84,6 @@ public class ContentManager {
         }
         mReadUtil = new ReadUtil();
     }
-
-
     public synchronized boolean openBook(BookBean bookBean) {
         this.mBookBean = bookBean;
         if (isCacheBook()) {
@@ -137,7 +132,7 @@ public class ContentManager {
             //保存文件编码
             mBookBean.setCharset(charset);
             //此处写入数据库....
-            BookDao.getInstance().update(mBookBean);
+            BookDao.update(mBookBean);
         } else {
             charset = mBookBean.getCharset();
         }
@@ -193,7 +188,7 @@ public class ContentManager {
             }
         }
         mBookBean.setLength(bookLength);
-        BookDao.getInstance().update(mBookBean);
+        BookDao.update(mBookBean);
         getChapter();
         return true;
     }
@@ -250,7 +245,6 @@ public class ContentManager {
             //记录上一个块尾部内容
             pre = content.substring(lastContent, content.length());
         }
-        Log.i(TAG, "length:" + mBookBean.getLength());
     }
 
     /**
@@ -311,7 +305,6 @@ public class ContentManager {
 
 
     private List<String> getNextLines(int progress) {
-        long startTime = System.currentTimeMillis();
         mReadUtil.setProgress(progress);
 
         LinkedList<String> lines = new LinkedList<>();
@@ -337,12 +330,10 @@ public class ContentManager {
 
         //页面内容已凑齐，记录总进度
         mCurrentPosition = mReadUtil.getProgress();
-        Log.i(TAG, "mCurrentPosition:" + mCurrentPosition);
         return lines;
     }
 
     private List<String> getLastLines(int progress) {
-        long startTime = System.currentTimeMillis();
         mReadUtil.setProgress(progress);
 
         LinkedList<String> lines = new LinkedList<>();
@@ -351,7 +342,6 @@ public class ContentManager {
         char lastWord = '.';
         while (lines.size() < mPageManager.getLineNum()) {
             if (mReadUtil.getProgress() < 0) {
-                Log.d(TAG, "getProgress:" + mReadUtil.getProgress());
                 reMeasure(lines, paragraph, true);
                 mReadUtil.setProgress(0);
                 break;
@@ -369,9 +359,6 @@ public class ContentManager {
 
         //页面内容已凑齐，记录总进度
         mCurrentPosition = mReadUtil.getProgress();
-        Log.i(TAG, "mCurrentPosition:" + mCurrentPosition);
-        long endTime = System.currentTimeMillis();
-        Log.i(TAG, "getNextLines cost time:" + (endTime - startTime));
         return lines;
     }
 
@@ -382,12 +369,13 @@ public class ContentManager {
      * @return
      */
     public PageTxt getPageTxtForBegin(int progress) {
+        List<String> pageLines = getNextLines(progress);
+        if (pageLines.size()==0) return null;
         PageTxt pageTxt = new PageTxt();
         pageTxt.setStart(progress);
-        pageTxt.setLines(getNextLines(progress));
+        pageTxt.setLines(pageLines);
         pageTxt.setEnd(getCurrentPosition());
-        Log.i(TAG, "PageTxtStart:" + pageTxt.getStart());
-        Log.i(TAG, "PageTxtEnd:" + pageTxt.getEnd());
+        pageTxt.setChapterName(getChapterName(pageTxt.getStart()));
         return pageTxt;
     }
 
@@ -398,13 +386,13 @@ public class ContentManager {
      * @return
      */
     public PageTxt getPageTxtForEnd(int progress) {
-
+        List<String> pageLines = getLastLines(progress - 1);
+        if (pageLines.size()==0) return null;
         PageTxt pageTxt = new PageTxt();
-        pageTxt.setLines(getLastLines(progress - 1));
+        pageTxt.setLines(pageLines);
         pageTxt.setStart(getCurrentPosition());
         pageTxt.setEnd(progress);
-        Log.i(TAG, "PageTxtStart:" + pageTxt.getStart());
-        Log.i(TAG, "PageTxtEnd:" + pageTxt.getEnd());
+        pageTxt.setChapterName(getChapterName(pageTxt.getStart()));
         return pageTxt;
     }
 
@@ -417,11 +405,6 @@ public class ContentManager {
      * @return
      */
     private void reMeasure(LinkedList<String> lines, LinkedList<Character> paCharacters, boolean isReverse) {
-//        StringBuffer buffer = new StringBuffer();
-//        for (Character character : paCharacters) {
-//            buffer.append(character);
-//        }
-//        Log.i(TAG,buffer.toString());
         if (isReverse) Collections.reverse(paCharacters);
         LinkedList<String> shortLines = new LinkedList();
         StringBuffer line = new StringBuffer();
@@ -467,8 +450,10 @@ public class ContentManager {
             if (num > 0) num += 2;
             mReadUtil.setProgress(mReadUtil.getProgress() - num);
         } else {
-            //需要加上前面消掉的 \r\n字符
-            if (num > 0) num += 2 + 1;//还要加一是因为position要移到pagetxt的start位置去，不需要提前准备一位了
+            //需要加上前面消掉的 \r\n字符  还要加一是因为position要移到pagetxt的start位置去，不需要提前准备一位了
+            if (num>0||lines.size()>=mPageManager.getLineNum()){
+                num += 3;
+            }
             mReadUtil.setProgress(mReadUtil.getProgress() + num);
         }
     }
@@ -484,13 +469,26 @@ public class ContentManager {
         return mCurrentPosition;
     }
 
-    public String updateChapter(int progress) {
+    public int getCurrentChapter() {
+        return mCurrentChapter;
+    }
+
+    public String getChapterName(int progress) {
+        int chapter = -1;
+        for (int i = 0; i < mDirectoryList.size(); i++) {
+            if (progress >= mDirectoryList.get(i).getStartPosition()) {
+                chapter = i;
+            }
+        }
+        return chapter == -1?"":mDirectoryList.get(chapter).getName();
+    }
+
+    public void setCurrentChapter(int progress){
         for (int i = 0; i < mDirectoryList.size(); i++) {
             if (progress >= mDirectoryList.get(i).getStartPosition()) {
                 mCurrentChapter = i;
             }
         }
-        return mDirectoryList.get(mCurrentChapter).getName();
     }
 
     public PageTxt getNextChapter() {

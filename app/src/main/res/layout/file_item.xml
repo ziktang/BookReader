@@ -5,7 +5,7 @@
                 android:layout_marginTop="2dp"
                 android:padding="15dp"
                 android:clickable="true"
-                android:background="@drawable/item_click"
+                android:background="?android:attr/selectableItemBackground"
     >
 
     <LinearLayout
@@ -67,6 +67,15 @@
             android:layout_height="24dp"
             android:layout_centerInParent="true"
             android:src="@drawable/general__shared__small_checkbox_checked"
+            android:visibility="invisible"
+            />
+
+        <TextView
+            android:id="@+id/isImport"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="已导入"
+            android:layout_centerInParent="true"
             android:visibility="invisible"
             />
     </RelativeLayout>

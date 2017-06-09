@@ -6,16 +6,15 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -24,10 +23,9 @@ import example.tctctc.com.tybookreader.base.BaseFragment;
 import example.tctctc.com.tybookreader.bean.BookBean;
 import example.tctctc.com.tybookreader.bookshelf.adapter.ShelfBookAdapter;
 import example.tctctc.com.tybookreader.bookshelf.contact.ShelfContact;
-import example.tctctc.com.tybookreader.bookshelf.model.ShelfDao;
+import example.tctctc.com.tybookreader.bookshelf.model.BookDao;
 import example.tctctc.com.tybookreader.bookshelf.presenter.ShelfPresenter;
 import example.tctctc.com.tybookreader.common.view.GridSpacingItemDecoration;
-import example.tctctc.com.tybookreader.utils.CustomUUId;
 
 /**
  * Created by tctctc on 2017/3/18.
@@ -58,6 +56,8 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
 
     private ShelfPresenter mPresenter;
 
+    private boolean isSelectAll;
+
     @Override
     protected void initView() {
     }
@@ -77,10 +77,9 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
         mBookRecycle.setAdapter(mAdapter);
         mBookRecycle.setLongClickable(true);
         mBookRecycle.addItemDecoration(new GridSpacingItemDecoration(3, 80, true));
-
         mSelectBooks = new ArrayList<>();
         mPresenter = new ShelfPresenter();
-        mPresenter.setVM(new ShelfDao(), this);
+        mPresenter.setVM(new BookDao(), this);
         mPresenter.onLoadBookList();
 
     }
@@ -93,27 +92,27 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
 
     @Override
     public void OnBookClick(BookBean bookBean) {
-        Intent intent = new Intent(getActivity(),ReadBookActivity.class);
-        intent.putExtra("book",bookBean);
+        Intent intent = new Intent(getActivity(), ReadBookActivity.class);
+        intent.putExtra("book", bookBean);
         startActivity(intent);
     }
 
     @Override
     public void selectBook(BookBean bookBean) {
-        if (!mSelectBooks.contains(bookBean))
-            mSelectBooks.add(bookBean);
+        mSelectBooks.add(bookBean);
         mBookDelete.setText("删除书籍(" + mSelectBooks.size() + ")");
         if (mSelectBooks.size() == mBooks.size()) {
+            isSelectAll = true;
             mBookAllSelect.setText(getResources().getString(R.string.all_un_select));
         }
     }
 
     @Override
     public void unSelectBook(BookBean bookBean) {
-        if (mSelectBooks.contains(bookBean))
-            mSelectBooks.remove(bookBean);
+        mSelectBooks.remove(bookBean);
         mBookDelete.setText("删除书籍(" + mSelectBooks.size() + ")");
         if (mSelectBooks.size() < mBooks.size()) {
+            isSelectAll = false;
             mBookAllSelect.setText(getResources().getString(R.string.all_select));
         }
     }
@@ -137,7 +136,7 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
 
     private void allSelectBook(HashMap<BookBean, Integer> bookMap) {
         //本来是全不选状态,此时按钮应该显示的是全选，所以点击之后变成全不选
-        if (mSelectBooks.size() != mBooks.size()) {
+        if (!isSelectAll) {
             for (Map.Entry<BookBean, Integer> entry : bookMap.entrySet()) {
                 if (entry.getValue() == 2) {
                     entry.setValue(1);
@@ -146,7 +145,7 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
             }
         }
         //本来是全选状态,此时按钮应该显示的是全不选，所以点击之后变成全选
-        else if (mSelectBooks.size() == mBooks.size()) {
+        else {
             for (Map.Entry<BookBean, Integer> entry : bookMap.entrySet()) {
                 if (entry.getValue() == 1) {
                     entry.setValue(2);
@@ -172,7 +171,7 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
         mPresenter = null;
     }
 
-    public void exitLongClick(){
+    public void exitLongClick() {
         mAdapter.statusInit();
         mBookOperate.setVisibility(View.INVISIBLE);
         mBookAllSelect.setText("全选");
@@ -180,12 +179,11 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
         mAdapter.notifyDataSetChanged();
     }
 
-    public boolean onBackPressed(){
-        if (mAdapter.isLongClick()){
+    public boolean onBackPressed() {
+        if (mAdapter.isLongClick()) {
             mAdapter.statusInit();
             exitLongClick();
             return true;
-        }
-        else return false;
+        } else return false;
     }
 }

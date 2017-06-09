@@ -103,7 +103,7 @@ public class ShelfBookAdapter extends RecyclerView.Adapter<ShelfBookAdapter.View
             mHashMap.put(book, 2);
             holder.mNormal.setVisibility(View.VISIBLE);
             holder.mCheck.setVisibility(View.INVISIBLE);
-            mBack.selectBook(book);
+            mBack.unSelectBook(book);
         }
         //若原本此书处于未选中状态，则现在应该变为选中
         else {

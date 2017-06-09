@@ -47,6 +47,7 @@
             android:background="@color/colorPrimary"
             android:gravity="center_vertical"
             android:orientation="horizontal"
+            android:visibility="invisible"
             >
 
             <TextView

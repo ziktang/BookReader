@@ -1,8 +1,6 @@
 package example.tctctc.com.tybookreader.bookshelf.common;
 
-
 import android.content.Context;
-
 import example.tctctc.com.tybookreader.bean.ReadConfigBean;
 import example.tctctc.com.tybookreader.utils.SPUtils;
 
@@ -69,7 +67,7 @@ public class ReadConfig {
     public static final int TURN_SLIDE = 4;
 
     //默认的翻页类型
-    private static final int DEFAULT_PAGE_TURN_TYPE = TURN_NO;
+    private static final int DEFAULT_PAGE_TURN_TYPE = TURN_COVER;
 
     /****
      * 背景
@@ -83,6 +81,8 @@ public class ReadConfig {
     public static final int BG_GRAY = 1;        //颜色1
     public static final int BG_GREEN = 2;        //颜色2
     public static final int BG_YELLOW = 3;        //颜色3
+    public static final int BG_WHITE = 4;   //白色
+    public static final int BG_NIGHT = 6;   //夜间
 
     //默认的背景
     public static final int DEFAULT_BACKGROUND = BG_GRAY;

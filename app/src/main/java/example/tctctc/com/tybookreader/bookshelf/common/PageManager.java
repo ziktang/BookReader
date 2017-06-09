@@ -9,35 +9,44 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Typeface;
-import android.nfc.Tag;
 import android.os.BatteryManager;
 import android.support.annotation.DimenRes;
+import android.support.annotation.TransitionRes;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.Toast;
+
+import org.greenrobot.greendao.query.QueryBuilder;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 import example.tctctc.com.tybookreader.BookApplication;
 import example.tctctc.com.tybookreader.R;
 import example.tctctc.com.tybookreader.bean.BookBean;
 import example.tctctc.com.tybookreader.bean.Directory;
+import example.tctctc.com.tybookreader.bean.MarkBean;
+import example.tctctc.com.tybookreader.bean.MarkBeanDao;
 import example.tctctc.com.tybookreader.bean.ReadConfigBean;
 import example.tctctc.com.tybookreader.bookshelf.model.BookDao;
+import example.tctctc.com.tybookreader.bookshelf.model.MarkDao;
 import example.tctctc.com.tybookreader.common.rx.RxManager;
 import example.tctctc.com.tybookreader.common.rx.RxSchedulers;
+import example.tctctc.com.tybookreader.utils.CustomUUId;
 import example.tctctc.com.tybookreader.utils.UiUtils;
 import example.tctctc.com.tybookreader.view.ReadPageView;
-import rx.Observable;
-import rx.Subscriber;
-import rx.functions.Action1;
-import rx.functions.Func1;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 
-import static android.R.attr.flipInterval;
-import static android.R.attr.typeface;
+import static example.tctctc.com.tybookreader.bookshelf.model.BookDao.update;
 
 
 /**
@@ -64,7 +73,9 @@ public class PageManager {
     private BookBean mBookBean;
 
     //这个页面的bitmap和下个页面的bitmap
-    private Bitmap mCurBitmap, mNextBitmap;
+//    private Bitmap mCurBitmap, mNextBitmap, mLastBitmap;
+
+    private Bitmap[] mBitmaps;
     //页面的宽和高
     private int mWidth, mHeight;
     //正文内容的区域宽
@@ -74,9 +85,11 @@ public class PageManager {
 
     //状态画笔
     private Paint mStatusPaint;
-    //当前页面要绘制的文字
+
+    private PageTxt mLastPageTxt;
     private PageTxt mCurPageTxt;
-    private PageTxt mCancelPage;
+    private PageTxt mNextPageTxt;
+
     //文字的行数
     private int lineNum;
     //行间距
@@ -125,7 +138,7 @@ public class PageManager {
     //字体大小
     private float mFontSize;
     //当前章节名
-    private String mCurChapterName;
+    private String mCurChapterName = " ";
     //当前书名
     private String mBookName;
 
@@ -142,29 +155,51 @@ public class PageManager {
 
     private RxManager mRxManager;
 
-    private Subscriber<Boolean> openResult = new Subscriber<Boolean>() {
+    private boolean isNext;
+
+    private int mCurPosition;
+
+    private boolean isReady;
+
+    private Disposable mDisposable;
+
+    private Observer<Boolean> mObserver = new Observer<Boolean>() {
         @Override
-        public void onCompleted() {
+        public void onSubscribe(@NonNull Disposable d) {
+            mDisposable = d;
         }
 
         @Override
-        public void onError(Throwable e) {
-        }
-
-        @Override
-        public void onNext(Boolean result) {
+        public void onNext(@NonNull Boolean result) {
             if (result) {
-                Log.d(TAG, "result:" + result);
                 mReadStatus = ReadStatus.READING;
-                mCurPageTxt = mContentManager.getPageTxtForBegin(mBookBean.getProgress());
-                if (mReadPageView != null) {
-                    updateContent(true);
+                if (mContentManager.getDirectory().size() > 0) {
+                    mRxManager.post("Directory", 1);
+                }else{
+                    mRxManager.post("Directory", 2);
                 }
-            } else {
-                mReadStatus = ReadStatus.FAILED;
-                drawStatus(mCurBitmap);
-                drawStatus(mNextBitmap);
+
+                mRxManager.post("length",1);
+
+                PageTxt pageTxt = mContentManager.getPageTxtForBegin(mBookBean.getProgress());
+                if (pageTxt == null) result = false;
+                else setCurrentPage(pageTxt);
             }
+
+            if (!result) {
+                mReadStatus = ReadStatus.FAILED;
+                mCurPosition = 1;
+                mReadPageView.setCurPosition(mCurPosition);
+                drawStatus(mBitmaps[mCurPosition]);
+            }
+        }
+
+        @Override
+        public void onError(@NonNull Throwable e) {
+        }
+
+        @Override
+        public void onComplete() {
         }
     };
 
@@ -181,7 +216,11 @@ public class PageManager {
 
         }
     };
-
+    private boolean noLast;
+    private boolean noNext;
+    private int lastPosition;
+    private int nextPosition;
+    private String progressStr;
 
     public static PageManager getInstance(Context context, BookBean bookBean) {
         if (sPageManager == null) {
@@ -265,10 +304,17 @@ public class PageManager {
         calculateLineNum();
         measureMarginWidth();
 
-        mRxManager.onEvent("chapter", new Action1<Directory>() {
+        mRxManager.onEvent("chapter", new Consumer<Directory>() {
             @Override
-            public void call(Directory directory) {
+            public void accept(@NonNull Directory directory) {
                 toChapter(directory.getStartPosition());
+            }
+        });
+
+        mRxManager.onEvent("mark", new Consumer<MarkBean>() {
+            @Override
+            public void accept(@NonNull MarkBean markBean) {
+                changeProgress(markBean.getPosition());
             }
         });
     }
@@ -281,11 +327,12 @@ public class PageManager {
 
     public void openBook() {
         mReadStatus = ReadStatus.OPENING;
-        drawStatus(mCurBitmap);
-        Observable.just(mBookBean.getProgress()).map(new Func1<Integer, Boolean>() {
-
+        mCurPosition = 1;
+        mReadPageView.setCurPosition(mCurPosition);
+        drawStatus(mBitmaps[mCurPosition]);
+        Observable.just(mBookBean.getProgress()).map(new Function<Integer, Boolean>() {
             @Override
-            public Boolean call(Integer integer) {
+            public Boolean apply(@NonNull Integer integer) throws Exception {
                 boolean result;
                 try {
                     result = mContentManager.openBook(mBookBean);
@@ -294,51 +341,42 @@ public class PageManager {
                 }
                 return result;
             }
-        }).compose(RxSchedulers.<Boolean>ioMain()).subscribe(openResult);
+        }).compose(RxSchedulers.<Boolean>ioMain()).subscribe(mObserver);
     }
 
-    private void updateContent(boolean isUpdateChapter) {
-        onDraw(mCurBitmap, mCurPageTxt.getLines(), true);
-        onDraw(mNextBitmap, mCurPageTxt.getLines(), true);
-    }
-
-    private void onDraw(Bitmap curBitmap, List<String> lines, boolean isUpdateChapter) {
-        //更新章节名
-        if (isUpdateChapter) {
-            mCurChapterName = mContentManager.updateChapter(mCurPageTxt.getStart());
-        }
-        //更新数据库阅读进度
-        mBookBean.setProgress(mCurPageTxt.getStart());
-        BookDao.getInstance().update(mBookBean);
-
+    private void onDraw(Bitmap curBitmap, PageTxt pageTxt, boolean isUpdate, int who) {
 
         Canvas canvas = new Canvas(curBitmap);
         canvas.drawBitmap(mBgBitmap, 0, 0, null);
 
-        if (lines.size() == 0) {
+        if (pageTxt.getLines().size() == 0) {
             return;
         }
 
 
         //画正文
         float height = marginHeight;
-        for (String line : lines) {
+        for (String line : pageTxt.getLines()) {
             height += lineSpace + mFontSize;
             canvas.drawText(line, marginMeasureWidth, height, mPaint);
         }
         //画书名
         canvas.drawText(mBookBean.getBookName(), marginMeasureWidth, marginBorderHeight + borderFontSize, mBorderPaint);
+//        canvas.drawText(pageTxt.getStart() + "", 5 * marginMeasureWidth, marginBorderHeight + borderFontSize, mBorderPaint);
+//        canvas.drawText(pageTxt.getEnd() + "", 7 * marginMeasureWidth, marginBorderHeight + borderFontSize, mBorderPaint);
+
+//        String s = who + "bitmap";
+//        canvas.drawText(s, 10 * marginMeasureWidth, marginBorderHeight + borderFontSize, mBorderPaint);
 
         //画章节名
-        float chapterNameWidth = mBorderPaint.measureText(mCurChapterName);
-        canvas.drawText(mCurChapterName, mWidth - chapterNameWidth - marginMeasureWidth, marginBorderHeight + borderFontSize, mBorderPaint);
+        float chapterNameWidth = mBorderPaint.measureText(pageTxt.getChapterName());
+        canvas.drawText(pageTxt.getChapterName(), mWidth - chapterNameWidth - marginMeasureWidth, marginBorderHeight + borderFontSize, mBorderPaint);
 
         //画时间
         canvas.drawText(dateStr, marginMeasureWidth, mHeight - marginBorderHeight, mBorderPaint);
         //画进度
-        mPageEvent.onProgressChange(mCurPageTxt.getStart());
-        float progress = (float) mCurPageTxt.getStart() / (float) mBookBean.getLength();
-        String progressStr = mProgressDf.format(progress * 100) + "%";
+        float progress = (float) pageTxt.getStart() / (float) mBookBean.getLength();
+        progressStr = mProgressDf.format(progress * 100) + "%";
 
         canvas.drawText(progressStr, mWidth - progressWidth - marginMeasureWidth, mHeight - marginBorderHeight, mBorderPaint);
         //画电池
@@ -364,24 +402,129 @@ public class PageManager {
         mBtInnerRectF.top = mBtOuterRectF.top + batterySpace;
 
         canvas.drawRoundRect(mBtInnerRectF, 10, 10, mBorderPaint);
-        mReadPageView.postInvalidate();
+
+        if (isUpdate)
+            mReadPageView.postInvalidate();
+        Log.d(TAG, "*****" + Thread.currentThread().getStackTrace()[2].getMethodName() + "()*****");
+    }
+
+    private void updateData() {
+        //更新章节进度
+        mContentManager.setCurrentChapter(mCurPageTxt.getStart());
+
+        Log.i(TAG, "getCurrentChapter:" + mContentManager.getCurrentChapter());
+        if (!mCurChapterName.equals(mCurPageTxt.getChapterName())) {
+            Log.i(TAG, "getCurrentChapter---:" + mContentManager.getCurrentChapter());
+            mRxManager.post("updateCurrentChapter", mContentManager.getCurrentChapter());
+            mCurChapterName = mCurPageTxt.getChapterName();
+        }
+
+
+        //更新数据库阅读进度
+        mBookBean.setProgress(mCurPageTxt.getStart());
+        BookDao.update(mBookBean);
+        //更新外部阅读进度
+        mPageEvent.onProgressChange(mCurPageTxt.getStart());
+
     }
 
 
-    public void nextPage() {
-        mCurPageTxt = mContentManager.getPageTxtForBegin(mCurPageTxt.getEnd());
-        Log.d(TAG, "char:" + mCurPageTxt.getLines().get(0).charAt(0) + "");
-        if (mReadPageView != null) {
-            Log.d(TAG, "nextPage");
-            updateContent(true);
+    public void setCurrentPage(PageTxt curPageTxt) {
+        mCurPosition = 1;
+        mCurPageTxt = curPageTxt;
+        Log.i(TAG,"mContentManager:"+(mContentManager==null));
+        Log.i(TAG,"mCurPageTxt:"+(mCurPageTxt==null));
+        mLastPageTxt = mContentManager.getPageTxtForEnd(mCurPageTxt.getStart());
+        mNextPageTxt = mContentManager.getPageTxtForBegin(mCurPageTxt.getEnd());
+
+        onDraw(mBitmaps[mCurPosition], mCurPageTxt, true, 1);
+
+        if (mLastPageTxt == null) {
+            noLast = true;
+        } else {
+            noLast = false;
+            onDraw(mBitmaps[mCurPosition - 1], mLastPageTxt, false, 0);
         }
+
+        if (mNextPageTxt == null) {
+            noNext = true;
+        } else {
+            noNext = false;
+            onDraw(mBitmaps[mCurPosition + 1], mNextPageTxt, false, 2);
+        }
+
+        mReadPageView.setCurPosition(mCurPosition);
+        updateData();
+        isReady = true;
     }
 
-    public void lastPage() {
-        mCurPageTxt = mContentManager.getPageTxtForEnd(mCurPageTxt.getStart());
-        if (mReadPageView != null) {
-            updateContent(true);
+
+    public void updateLastNext() {
+        isReady = false;
+        Observable.create(new ObservableOnSubscribe<Boolean>() {
+
+
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Boolean> e) throws Exception {
+                if (isNext) {
+                    mCurPosition = (mCurPosition + 1) % 3;
+                    lastPosition = mCurPosition == 0 ? 2 : mCurPosition - 1;
+                    nextPosition = mCurPosition == 2 ? 0 : mCurPosition + 1;
+
+                    noLast = false;
+                    mLastPageTxt = mCurPageTxt;
+                    mCurPageTxt = mNextPageTxt;
+
+                    mNextPageTxt = mContentManager.getPageTxtForBegin(mNextPageTxt.getEnd());
+                    if (mNextPageTxt == null) {
+                        noNext = true;
+                    } else {
+                        noNext = false;
+                        onDraw(mBitmaps[nextPosition], mNextPageTxt, false, nextPosition);
+                    }
+                } else {
+                    mCurPosition = mCurPosition == 0 ? 2 : mCurPosition - 1;
+                    lastPosition = mCurPosition == 0 ? 2 : mCurPosition - 1;
+                    nextPosition = mCurPosition == 2 ? 0 : mCurPosition + 1;
+
+                    noNext = false;
+                    mNextPageTxt = mCurPageTxt;
+                    mCurPageTxt = mLastPageTxt;
+
+                    mLastPageTxt = mContentManager.getPageTxtForEnd(mCurPageTxt.getStart());
+
+                    if (mLastPageTxt == null) {
+                        noLast = true;
+                    } else {
+                        noLast = false;
+                        onDraw(mBitmaps[lastPosition], mLastPageTxt, false, lastPosition);
+                    }
+                }
+                mReadPageView.setCurPosition(mCurPosition);
+                updateData();
+                e.onNext(true);
+            }
+        }).subscribe(new Consumer<Boolean>() {
+            @Override
+            public void accept(@NonNull Boolean aBoolean) throws Exception {
+                isReady = true;
+            }
+        });
+    }
+
+    public boolean updateNextPage(boolean isNext) {
+        if (isNext && noNext) {
+            Toast.makeText(mContext, "已经是最后一页了", Toast.LENGTH_SHORT).show();
+            return false;
         }
+
+        if (!isNext && noLast) {
+            Toast.makeText(mContext, "已经是第一页了", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        this.isNext = isNext;
+        return true;
     }
 
     public void nextChapter() {
@@ -389,32 +532,61 @@ public class PageManager {
         if (pageTxt == null) {
             Toast.makeText(mContext, "已经是最后一章了", Toast.LENGTH_SHORT).show();
         } else {
-            mCurPageTxt = pageTxt;
-            if (mReadPageView != null) {
-                updateContent(true);
-            }
+            setCurrentPage(pageTxt);
         }
     }
 
     public void lastChapter() {
         PageTxt pageTxt = mContentManager.getLastChapter();
-        if (pageTxt == null) {
+        if (pageTxt == null)
             Toast.makeText(mContext, "已经是第一章了", Toast.LENGTH_SHORT).show();
-        } else {
-            mCurPageTxt = pageTxt;
-            if (mReadPageView != null) {
-                updateContent(true);
-            }
-        }
+        else
+            setCurrentPage(pageTxt);
+
     }
 
     public void toChapter(int position) {
-        mCurPageTxt = mContentManager.getPageTxtForBegin(position);
-        if (mReadPageView != null) {
-            updateContent(true);
+        PageTxt pageTxt = mContentManager.getPageTxtForBegin(position);
+        if (pageTxt == null) {
+
+        } else setCurrentPage(pageTxt);
+    }
+
+    public boolean bookMark() {
+        QueryBuilder builder = MarkDao.getInstance().queryBuilder();
+        MarkBean markBean = (MarkBean) builder.where(MarkBeanDao.Properties.BookId.eq(mBookBean.getBookId()), MarkBeanDao.Properties.Position.eq(mCurPageTxt.getStart()))
+                .build().unique();
+
+        if (markBean != null) {
+            MarkDao.getInstance().deleteByKey(markBean.getId());
+            return false;
+        } else {
+            markBean = new MarkBean();
+            markBean.setId(CustomUUId.get().nextId());
+            markBean.setTime(DateUtils.formatDateTime(mContext, new Date().getTime(), DateUtils.FORMAT_SHOW_YEAR));
+            markBean.setBookName(mBookBean.getBookName());
+            markBean.setBookId(mBookBean.getBookId());
+            markBean.setPosition(mCurPageTxt.getStart());
+            markBean.setChapterName(mCurPageTxt.getChapterName());
+            markBean.setProgress(progressStr);
+            StringBuffer buffer = new StringBuffer();
+            for (int i = 0; i < 3; i++) {
+                buffer.append(mCurPageTxt.getLines().get(i));
+                if (buffer.length() > 60)
+                    break;
+            }
+            markBean.setDescribe(buffer.toString());
+            MarkDao.getInstance().insert(markBean);
+            return true;
         }
     }
 
+    public boolean isMark() {
+        QueryBuilder builder = MarkDao.getInstance().queryBuilder();
+        MarkBean markBean = (MarkBean) builder.where(MarkBeanDao.Properties.BookId.eq(mBookBean.getBookId()), MarkBeanDao.Properties.Position.eq(mCurPageTxt.getStart()))
+                .build().unique();
+        return markBean != null;
+    }
 
     private void drawStatus(Bitmap curBitmap) {
         mStatusPaint.setColor(BookApplication.getContext().getResources().getColor(R.color.statusColor));
@@ -436,13 +608,13 @@ public class PageManager {
         mReadPageView.postInvalidate();
     }
 
-
     public void setReadPageView(ReadPageView readPageView) {
         mReadPageView = readPageView;
-        mCurBitmap = mReadPageView.getCurrentBitmap();
-        mNextBitmap = mReadPageView.getNextBitmap();
-        mWidth = mCurBitmap.getWidth();
-        mHeight = mCurBitmap.getHeight();
+        mReadPageView.setPageManager(this);
+
+        mBitmaps = mReadPageView.getBitmaps();
+        mWidth = mBitmaps[0].getWidth();
+        mHeight = mBitmaps[0].getHeight();
 
         initData();
     }
@@ -462,22 +634,30 @@ public class PageManager {
         Bitmap bitmap = Bitmap.createBitmap(mWidth, mHeight, Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(bitmap);
         switch (type) {
-            /*case ReadConfig.BG_PAGER:
-                int bgRes = R.drawable.reading__reading_themes_vine_yellow1;
-                bitmap = BitmapUtils.decodeFromResourceResize(mContext.getResources(), bgRes, mWidth, mHeight);
-                break;*/
+//            case ReadConfig.BG_PAGER:
+//                int bgRes = R.drawable.reading__reading_themes_vine_yellow1;
+//                bitmap = BitmapUtils.decodeFromResourceResize(mContext.getResources(), bgRes, mWidth, mHeight);
+//                break;
             case ReadConfig.BG_GREEN:
-                Log.i("aaa", "green");
                 canvas.drawColor(mContext.getResources().getColor(R.color.read_green));
-                fontColor = mContext.getResources().getColor(R.color.follow_read_green);
+                fontColor = mContext.getResources().getColor(R.color.follow_read_black);
                 break;
             case ReadConfig.BG_GRAY:
                 canvas.drawColor(mContext.getResources().getColor(R.color.read_gray));
-                fontColor = mContext.getResources().getColor(R.color.follow_read_gray);
+                fontColor = mContext.getResources().getColor(R.color.follow_read_black);
                 break;
             case ReadConfig.BG_YELLOW:
                 canvas.drawColor(mContext.getResources().getColor(R.color.read_yellow));
-                fontColor = mContext.getResources().getColor(R.color.follow_read_yellow);
+                fontColor = mContext.getResources().getColor(R.color.follow_read_black);
+                break;
+            case ReadConfig.BG_WHITE:
+                canvas.drawColor(mContext.getResources().getColor(R.color.read_white));
+                fontColor = mContext.getResources().getColor(R.color.follow_read_black);
+                break;
+
+            case ReadConfig.BG_NIGHT:
+                canvas.drawColor(mContext.getResources().getColor(R.color.read_night));
+                fontColor = mContext.getResources().getColor(R.color.follow_read_white);
                 break;
         }
         mBgBitmap = bitmap;
@@ -510,47 +690,53 @@ public class PageManager {
     }
 
     public void changeFontSize(int fontSize) {
-        mFontSize = UiUtils.dpToPx(mContext, mConfigBean.getFontSize());
+        mFontSize = UiUtils.dpToPx(mContext, fontSize);
         mPaint.setTextSize(mFontSize);
         calculateLineNum();
         measureMarginWidth();
-        mCurPageTxt = mContentManager.getPageTxtForBegin(mCurPageTxt.getStart());
-        updateContent(true);
+        PageTxt pageTxt = mContentManager.getPageTxtForBegin(mCurPageTxt.getStart());
+        if (pageTxt == null) {
+
+        }
+        setCurrentPage(pageTxt);
     }
 
     public void changeTypeface(String type) {
-        Toast.makeText(mContext, "设置了字体类型:" + type, Toast.LENGTH_SHORT).show();
         setTypeFace(type);
         mPaint.setTypeface(mTypeface);
         mBorderPaint.setTypeface(mTypeface);
         calculateLineNum();
         measureMarginWidth();
-        mCurPageTxt = mContentManager.getPageTxtForBegin(mCurPageTxt.getStart());
-        if (mReadPageView != null)
-            updateContent(true);
+        PageTxt pageTxt = mContentManager.getPageTxtForBegin(mCurPageTxt.getStart());
+        if (pageTxt == null) {
+
+        }
+        setCurrentPage(pageTxt);
     }
 
     public void changeBackground(int type) {
         setBgBitmap(type);
-        updateContent(false);
-    }
-
-    public void changePageTurn(int type) {
-        Toast.makeText(mContext, "切换了翻页方式:" + type, Toast.LENGTH_SHORT).show();
+//        onDraw(mBitmaps[mCurPosition], mCurPageTxt, true,mCurPosition);
+        setCurrentPage(mCurPageTxt);
     }
 
     public void changeProgress(int progress) {
-        mCurPageTxt = mContentManager.getPageTxtForBegin(progress);
-        if (mReadPageView != null) {
-            updateContent(true);
+        Log.i(TAG,"progress:"+progress);
+        Log.i(TAG,"lenth:"+mBookBean.getLength());
+        PageTxt pageTxt = mContentManager.getPageTxtForBegin(progress);
+        if (pageTxt == null) {
+
         }
+        Log.i(TAG,"pageTxt:"+pageTxt);
+        setCurrentPage(pageTxt);
     }
 
 
     public void changeDayOrNight(Boolean isNight) {
         mConfigBean.setNight(isNight);
         initBgBitmapAndFontColor();
-        updateContent(false);
+//        onDraw(mBitmaps[mCurPosition], mCurPageTxt, true,mCurPosition);
+        setCurrentPage(mCurPageTxt);
     }
 
     public void setPageEvent(PageEvent pageEvent) {
@@ -562,7 +748,7 @@ public class PageManager {
             String date = mDateFormat.format(new Date());
             if (!dateStr.equals(date)) {
                 dateStr = date;
-                updateContent(false);
+                onDraw(mBitmaps[mCurPosition], mCurPageTxt, true, mCurPosition);
             }
         }
     }
@@ -570,21 +756,28 @@ public class PageManager {
     private void updateBattery(int level) {
         if (mCurPageTxt != null && mReadPageView != null && !mReadPageView.isAnima()) {
             if (batteryLevel != level) {
-                updateContent(false);
+                onDraw(mBitmaps[mCurPosition], mCurPageTxt, true, mCurPosition);
             }
         }
     }
 
+    public ReadStatus getReadStatus() {
+        return mReadStatus;
+    }
+
+    public boolean isReady() {
+        return isReady;
+    }
 
     private void measureMarginWidth() {
-        Log.i(TAG, "mWidth:" + mWidth);
-        Log.i(TAG, "mHeight:" + mHeight);
-        Log.i(TAG, "mBodyWidth:" + mBodyWidth);
-        Log.i(TAG, "marginWidth:" + marginWidth);
-        Log.i(TAG, "marginHeight:" + marginHeight);
+//        Log.i(TAG, "mWidth:" + mWidth);
+//        Log.i(TAG, "mHeight:" + mHeight);
+//        Log.i(TAG, "mBodyWidth:" + mBodyWidth);
+//        Log.i(TAG, "marginWidth:" + marginWidth);
+//        Log.i(TAG, "marginHeight:" + marginHeight);
         float width = mBodyWidth % mFontSize;
         marginMeasureWidth = marginWidth + width / 2;
-        Log.i(TAG, "marginMeasureWidth:" + marginMeasureWidth);
+//        Log.i(TAG, "marginMeasureWidth:" + marginMeasureWidth);
     }
 
     private void calculateLineNum() {
@@ -596,9 +789,10 @@ public class PageManager {
     }
 
     public void destroy() {
+        BookDao.update(mBookBean);
         mContext.unregisterReceiver(mReceiver);
         mRxManager.clear();
-        openResult.unsubscribe();
+        mDisposable.dispose();
         mContentManager.destroy();
         mReadPageView = null;
         mPageEvent = null;
@@ -607,7 +801,7 @@ public class PageManager {
         sPageManager = null;
     }
 
-    enum ReadStatus {
+    public enum ReadStatus {
         OPENING, READING, FAILED
     }
 

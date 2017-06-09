@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TYBookReader</string>
+    <string name="app_name">阅读</string>
     <string name="all_select">全选</string>
     <string name="all_un_select">全不选</string>
     <string name="delete">删除</string>

@@ -1,7 +1,8 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.antfortune.freeline'
+//apply plugin: 'com.antfortune.freeline'
 apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'org.greenrobot.greendao'
+apply plugin: 'com.jakewharton.hugo'
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
@@ -14,9 +15,9 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
-    freeline {
-        hack true
-    }
+//    freeline {
+//        hack true
+//    }
     buildTypes {
         release {
             minifyEnabled false
@@ -31,7 +32,7 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.antfortune.freeline:runtime:0.8.6'
+//    compile 'com.antfortune.freeline:runtime:0.8.6'
     testCompile 'junit:junit:4.12'
     compile('com.android.support:support-v4:23.4.0') {
         force = true;
@@ -45,8 +46,10 @@ dependencies {
     apt "com.google.dagger:dagger-compiler:2.8"
     compile 'com.google.dagger:dagger:2.8'
     //Rx
-    compile 'io.reactivex:rxjava:x.y.z'
-    compile 'io.reactivex:rxandroid:+'
+
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    compile 'io.reactivex.rxjava2:rxjava:2.1.0'
+
     //greendao数据库
     compile 'org.greenrobot:greendao:3.2.0'
     compile files('lib/juniversalchardet-1.0.3.jar')
