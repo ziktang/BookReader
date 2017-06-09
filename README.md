@@ -1,5 +1,4 @@
-# BookReader文本阅读器
-一个Android小说阅读器,基于Rxjava+MVP
+# 文本阅读器
 
 主要功能:
 
@@ -8,14 +7,17 @@
 3.支持多种翻页模式
 4.目录提取，书签添加
 
-![](http://omu5mmfy7.bkt.clouddn.com/book_1.png)
-![](http://omu5mmfy7.bkt.clouddn.com/book_2.png)
-![](http://omu5mmfy7.bkt.clouddn.com/book_3.png)
-![](http://omu5mmfy7.bkt.clouddn.com/book_4.png)
-![](http://omu5mmfy7.bkt.clouddn.com/book_5.png)
-![](http://omu5mmfy7.bkt.clouddn.com/book_6.png)
-![](http://omu5mmfy7.bkt.clouddn.com/book_7.png)
-![](http://omu5mmfy7.bkt.clouddn.com/book_8.png)
-![](http://omu5mmfy7.bkt.clouddn.com/book_9.png)
-![](http://omu5mmfy7.bkt.clouddn.com/book_10.png)
-![](http://omu5mmfy7.bkt.clouddn.com/book_11.png)
+![](http://omu5mmfy7.bkt.clouddn.com/book_1.png?imageMogr2/thumbnail/216x/blur/1x0/quality/100|imageslim)
+![](http://omu5mmfy7.bkt.clouddn.com/book_2.png?imageMogr2/thumbnail/216x/blur/1x0/quality/100|imageslim)
+![](http://omu5mmfy7.bkt.clouddn.com/book_3.png?imageMogr2/thumbnail/216x/blur/1x0/quality/100|imageslim)
+![](http://omu5mmfy7.bkt.clouddn.com/book_4.png?imageMogr2/thumbnail/216x/blur/1x0/quality/100|imageslim)
+![](http://omu5mmfy7.bkt.clouddn.com/book_5.png?imageMogr2/thumbnail/216x/blur/1x0/quality/100|imageslim)
+![](http://omu5mmfy7.bkt.clouddn.com/book_6.png?imageMogr2/thumbnail/216x/blur/1x0/quality/100|imageslim)
+![](http://omu5mmfy7.bkt.clouddn.com/book_7.png?imageMogr2/thumbnail/216x/blur/1x0/quality/100|imageslim)
+![](http://omu5mmfy7.bkt.clouddn.com/book_8.png?imageMogr2/thumbnail/216x/blur/1x0/quality/100|imageslim)
+![](http://omu5mmfy7.bkt.clouddn.com/book_9.png?imageMogr2/thumbnail/216x/blur/1x0/quality/100|imageslim)
+![](http://omu5mmfy7.bkt.clouddn.com/book_10.png?imageMogr2/thumbnail/216x/blur/1x0/quality/100|imageslim)
+![](http://omu5mmfy7.bkt.clouddn.com/book_11.png?imageMogr2/thumbnail/216x/blur/1x0/quality/100|imageslim)
+
+
+
