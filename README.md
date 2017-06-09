@@ -20,4 +20,7 @@
 ![](http://omu5mmfy7.bkt.clouddn.com/book_11.png?imageMogr2/thumbnail/216x/blur/1x0/quality/100|imageslim)
 
 
+感谢如风小说阅读器:https://github.com/PeachBlossom/treader
+
+
 
