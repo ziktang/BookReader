@@ -6,8 +6,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.0'
-//        classpath 'com.antfortune.freeline:gradle:0.8.6'
+        classpath 'com.android.tools.build:gradle:2.3.3'
+        classpath 'com.antfortune.freeline:gradle:0.8.6'
         classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
         classpath 'org.greenrobot:greendao-gradle-plugin:3.2.1'
         classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
