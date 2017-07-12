@@ -1,0 +1,2 @@
+*.java linguist-language=java
+*.xml linguist-language=java
