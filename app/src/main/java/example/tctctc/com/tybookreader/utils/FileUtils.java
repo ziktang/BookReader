@@ -38,34 +38,57 @@ public class FileUtils {
         return fileList;
     }
 
-    public static List<File> listFilterOneFolder(File file, String rex) {
+    /**
+     * 返回指定文件夹下指定格式的文件和文件夹的集合
+     * @param file
+     * @param rex
+     * @return
+     */
+    public static List<File> listFilterOneFolder(File file, String rex,long length) {
         List<File> files = new ArrayList(Arrays.asList(file.listFiles()));
         Iterator<File> iterator = files.iterator();
         while (iterator.hasNext()) {
             File file1 = iterator.next();
-            if (file1.isHidden()) iterator.remove();
-            else if (file1.isFile() && !file1.getName().endsWith(rex)) {
+            if (file1.isHidden()){
+                iterator.remove();
+            }else if (file1.isFile() && ( !file1.getName().endsWith(rex) || file1.length() < length)) {
                 iterator.remove();
             }
         }
         return files;
     }
 
+    /**
+     * 获取格式化的文件大小
+     * @param file
+     * @return
+     */
     public static String getFileSize(File file) {
         DecimalFormat df = new DecimalFormat(".00");
-        float si = file.length();
-        if (si < 1024)
-            return df.format(si) + "b";
-        si /= 1024f;
-        if (si > 1024f) {
-            si /= 1024f;
-            if (si > 1024f) {
-                si /= 1024f;
-                return df.format(si) + "Gb";
-            }
-            return df.format(si) + "mb";
+        float size = file.length();
+        int times = 0;
+        String formatSize = "";
+        while (size>=1024f){
+            size/=1024f;
+            times++;
         }
-        return df.format(si) + "kb";
+        switch (times){
+            case 0:
+                formatSize =  df.format(size) + "B";
+                break;
+            case 1:
+                formatSize =  df.format(size) + "K";
+                break;
+            case 2:
+                formatSize =  df.format(size) + "M";
+                break;
+            case 3:
+                formatSize =  df.format(size) + "G";
+                break;
+            default:
+                formatSize =  "文件太大了";
+        }
+        return formatSize;
     }
 
 

@@ -7,8 +7,7 @@ import example.tctctc.com.tybookreader.base.BaseModel;
 import example.tctctc.com.tybookreader.base.BasePresenter;
 import example.tctctc.com.tybookreader.base.BaseView;
 import example.tctctc.com.tybookreader.bean.BookBean;
-import example.tctctc.com.tybookreader.bean.ScanBook;
-import io.reactivex.Flowable;
+import example.tctctc.com.tybookreader.bean.ScanFile;
 import io.reactivex.Observable;
 
 /**
@@ -23,13 +22,11 @@ public interface ScanContact {
 
         void whenStopScan();
 
-        void refresh(int totalNum);
-
-        void whenScan(File file);
+        void whenScan(ScanFile file);
     }
 
     abstract class Presenter extends BasePresenter<Model, View> {
-        public abstract void onAddBooks(List<ScanBook> files);
+        public abstract void onAddBooks(List<ScanFile> files);
 
         public abstract void onStartScanBooks(File file, String rex);
 
@@ -39,9 +36,8 @@ public interface ScanContact {
     interface Model extends BaseModel {
         Observable<Boolean> addBookList(List<BookBean> been);
 
-        Flowable<File> scanFile(File file, String rex);
+        Observable<File> scanFile(File file, String rex);
 
-        int getTotalNum();
-
+        List<BookBean> loadImportedBooks();
     }
 }

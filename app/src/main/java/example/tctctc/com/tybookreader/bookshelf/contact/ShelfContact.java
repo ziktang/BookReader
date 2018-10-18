@@ -20,14 +20,11 @@ public interface ShelfContact {
     abstract class Presenter extends BasePresenter<Model, View> {
         public abstract void onLoadBookList();
 
-        public abstract void onDeleteBooks(List<BookBean> books);
+        public abstract void onDeleteBook(long bookId);
     }
 
     interface Model extends BaseModel {
-        Observable<List<BookBean>> loadBookList();
-
-        Observable<Boolean> removeDeleteBooks(List<BookBean> books);
-
-        Observable<Boolean> removeBooks(List<BookBean> books);
+        Observable<List<BookBean>> loadImportedBooksAsyn();
+        void removeBook(long bookId);
     }
 }

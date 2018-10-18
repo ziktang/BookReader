@@ -18,6 +18,13 @@ public class BookBean implements Serializable {
 
     public static final long serialVersionUID = 1;
 
+    public static final int BOOK_STATUS_IMPORT = 1;
+    public static final int BOOK_STATUS_REMOVE = 2;
+
+
+    public static final int BOOK_TYPE_LOCAL = 1;
+    public static final int BOOK_TYPE_NET = 2;
+
     @Id(autoincrement = true)
     private Long bookId;
     private String bookName;
@@ -27,24 +34,25 @@ public class BookBean implements Serializable {
     //1 表示在书架上  2表示已移出书架(但此时数据库仍然有缓存)
     private int status;
     //书本类型，本地书 1 在线书 2
-    private int  mBookType;
+    private int  bookType;
     private String charset;
     private int progress;
-    @Generated(hash = 1685938753)
+    
+    @Generated(hash = 269018259)
+    public BookBean() {
+    }
+    @Generated(hash = 1050782167)
     public BookBean(Long bookId, String bookName, String path, String fileSize,
-            long length, int status, int mBookType, String charset, int progress) {
+            long length, int status, int bookType, String charset, int progress) {
         this.bookId = bookId;
         this.bookName = bookName;
         this.path = path;
         this.fileSize = fileSize;
         this.length = length;
         this.status = status;
-        this.mBookType = mBookType;
+        this.bookType = bookType;
         this.charset = charset;
         this.progress = progress;
-    }
-    @Generated(hash = 269018259)
-    public BookBean() {
     }
     public Long getBookId() {
         return this.bookId;
@@ -82,11 +90,11 @@ public class BookBean implements Serializable {
     public void setStatus(int status) {
         this.status = status;
     }
-    public int getMBookType() {
-        return this.mBookType;
+    public int getBookType() {
+        return this.bookType;
     }
-    public void setMBookType(int mBookType) {
-        this.mBookType = mBookType;
+    public void setBookType(int mBookType) {
+        this.bookType = mBookType;
     }
     public String getCharset() {
         return this.charset;
@@ -99,6 +107,23 @@ public class BookBean implements Serializable {
     }
     public void setProgress(int progress) {
         this.progress = progress;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof BookBean){
+            BookBean bookBean = (BookBean) obj;
+            return bookId!=null&&bookId.equals(bookBean.getBookId());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        if (bookId!=null){
+            return bookId.hashCode();
+        }
+        return super.hashCode();
     }
 }
 

@@ -19,28 +19,6 @@
         android:src="@drawable/general__shared__txt"
         />
 
-    <ImageView
-        android:id="@+id/normal"
-        android:layout_width="18dp"
-        android:layout_height="18dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="8dp"
-        android:src="@drawable/general__shared__multi_checkbox_normal"
-        android:visibility="invisible"
-        />
-
-    <ImageView
-        android:id="@+id/checked"
-        android:layout_width="18dp"
-        android:layout_height="18dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="8dp"
-        android:src="@drawable/general__shared__small_checkbox_checked"
-        android:visibility="invisible"
-        />
-
     <TextView
         android:id="@+id/bookName"
         android:layout_width="match_parent"

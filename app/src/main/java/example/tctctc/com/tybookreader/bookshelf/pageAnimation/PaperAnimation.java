@@ -24,7 +24,6 @@ import android.widget.Toast;
 import java.util.List;
 
 import example.tctctc.com.tybookreader.view.ReadPageView;
-import hugo.weaving.DebugLog;
 
 import static android.R.attr.x;
 import static android.R.attr.y;

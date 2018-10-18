@@ -2,24 +2,18 @@ package example.tctctc.com.tybookreader.bookshelf.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-
 import java.io.File;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.TreeSet;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import example.tctctc.com.tybookreader.R;
-import example.tctctc.com.tybookreader.bean.ScanBook;
+import example.tctctc.com.tybookreader.app.Constant;
+import example.tctctc.com.tybookreader.bean.ScanFile;
 import example.tctctc.com.tybookreader.utils.FileUtils;
 
 /**
@@ -28,31 +22,29 @@ import example.tctctc.com.tybookreader.utils.FileUtils;
 
 public class FileScanAdapter extends RecyclerView.Adapter<FileScanAdapter.FileViewHolder> {
 
-    private List<ScanBook> mScanBooks;
+    private List<ScanFile> mScanFiles;
     private LayoutInflater mInflater;
     public Context mContext;
 
-    //当有长按或点击发生时给父view的回调
+    /**
+     * 当有长按或点击发生时给父view的回调
+     */
     private FileScanAdapter.OnClickCallBack mBack;
-
-    //位置和状态 1 选中状态  2未选中状态
-    private HashMap<ScanBook, Integer> mFileMap;
 
     public interface OnClickCallBack {
 
-        void clickFolder(ScanBook scanBook);
+        void clickFolder(ScanFile scanFile);
 
-        void selectFile(ScanBook scanBook);
+        void selectFile(ScanFile scanFile);
 
-        void unSelectFile(ScanBook scanBook);
+        void unSelectFile(ScanFile scanFile);
     }
 
-    public FileScanAdapter(List<ScanBook> mScanBooks, Context context, FileScanAdapter.OnClickCallBack mBack) {
-        this.mScanBooks = mScanBooks;
+    public FileScanAdapter(List<ScanFile> mScanFiles, Context context, FileScanAdapter.OnClickCallBack mBack) {
+        this.mScanFiles = mScanFiles;
         this.mContext = context;
         this.mBack = mBack;
         mInflater = LayoutInflater.from(context);
-        dataInit();
     }
 
     @Override
@@ -63,51 +55,37 @@ public class FileScanAdapter extends RecyclerView.Adapter<FileScanAdapter.FileVi
 
     @Override
     public void onBindViewHolder(final FileViewHolder holder, final int position) {
-        final ScanBook scanBook = mScanBooks.get(position);
+        final ScanFile scanFile = mScanFiles.get(position);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if (scanBook.getFile().isFile()) {
-                    select(scanBook, position);
+                if (scanFile.getFile().isFile()) {
+                    select(scanFile, position);
                 } else {
-                    mBack.clickFolder(scanBook);
+                    mBack.clickFolder(scanFile);
                 }
             }
         });
-        holder.setData(scanBook);
+        holder.setData(scanFile);
     }
 
-    private void select(ScanBook scanBook, Integer position) {
-        if(scanBook.isImported()) return;
-        if (mFileMap.get(scanBook) == 1) {
-            mFileMap.put(scanBook, 2);
-            mBack.unSelectFile(scanBook);
+    private void select(ScanFile scanFile, Integer position) {
+        if(scanFile.isImported()){
+            return;
+        }
+        if (scanFile.isChecked()) {
+            scanFile.setChecked(false);
+            mBack.unSelectFile(scanFile);
         } else {
-            mFileMap.put(scanBook, 1);
-            mBack.selectFile(scanBook);
+            scanFile.setChecked(true);
+            mBack.selectFile(scanFile);
         }
         notifyItemChanged(position);
     }
 
-    public void dataInit() {
-        mFileMap = new HashMap<>();
-        Iterator<ScanBook> iterator = mScanBooks.iterator();
-        while (iterator.hasNext()) {
-            ScanBook scanBook = iterator.next();
-            if (scanBook.getFile().isFile()) {
-                mFileMap.put(scanBook, 2);
-            }
-        }
-    }
-
     @Override
     public int getItemCount() {
-        return mScanBooks == null ? 0 : mScanBooks.size();
-    }
-
-    public HashMap<ScanBook, Integer> getFileMap() {
-        return mFileMap;
+        return mScanFiles == null ? 0 : mScanFiles.size();
     }
 
     class FileViewHolder extends RecyclerView.ViewHolder {
@@ -130,26 +108,42 @@ public class FileScanAdapter extends RecyclerView.Adapter<FileScanAdapter.FileVi
             ButterKnife.bind(this, itemView);
         }
 
-        public void setData(ScanBook scanBook) {
-            File file = scanBook.getFile();
+        public void setData(ScanFile scanFile) {
+            File file = scanFile.getFile();
             fileName.setText(file.getName().trim());
             if (file.isFile()) {
                 fileImg.setImageDrawable(mContext.getResources().getDrawable(R.drawable.general__shared__txt_icon));
                 fileInfo.setText(FileUtils.getFileSize(file));
-                if (scanBook.isImported()) {
-                    show(View.INVISIBLE, View.INVISIBLE, View.VISIBLE);
+                if (scanFile.isImported()) {
+                    showImported();
                     return;
                 }
-                if (mFileMap.get(scanBook) == 1) {
-                    show(View.VISIBLE, View.INVISIBLE, View.INVISIBLE);
+                if (scanFile.isChecked()) {
+                    showChecked();
                 } else {
-                    show(View.INVISIBLE, View.VISIBLE, View.INVISIBLE);
+                    showNomal();
                 }
             } else {
                 fileImg.setImageDrawable(mContext.getResources().getDrawable(R.drawable.general__shared__folder_icon));
-                fileInfo.setText(FileUtils.listFilterOneFolder(file, ".txt").size() + "项");
-                show(View.INVISIBLE, View.INVISIBLE, View.INVISIBLE);
+                fileInfo.setText(FileUtils.listFilterOneFolder(file, mContext.getString(R.string.file_type_txt), Constant.BookShelf.SCAN_BOOK_SIZE).size() + "项");
+                showFolder();
             }
+        }
+
+        private void showNomal() {
+            show(View.INVISIBLE,View.VISIBLE,View.INVISIBLE);
+        }
+
+        private void showChecked() {
+            show(View.VISIBLE,View.INVISIBLE,View.INVISIBLE);
+        }
+
+        private void showImported() {
+            show(View.INVISIBLE,View.INVISIBLE,View.VISIBLE);
+        }
+
+        private void showFolder() {
+            show(View.INVISIBLE,View.INVISIBLE,View.INVISIBLE);
         }
 
         private void show(int checkedVisible, int normalVisible, int isImportedVisible) {
@@ -158,5 +152,4 @@ public class FileScanAdapter extends RecyclerView.Adapter<FileScanAdapter.FileVi
             isImported.setVisibility(isImportedVisible);
         }
     }
-
 }

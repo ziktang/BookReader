@@ -13,6 +13,7 @@ import android.widget.Toast;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import example.tctctc.com.tybookreader.common.rx.RxManager;
+import example.tctctc.com.tybookreader.utils.StatusBarUtils;
 
 public abstract class BaseActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -87,7 +88,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         if (isSteepStatusBar){
             setSteepStatusBar();
         }
-        //设置全屏
+        //设置无标题
         if (isAllowFullScreen){
             supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         }
@@ -138,10 +139,6 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         Log.d(TAG,"*****"+Thread.currentThread().getStackTrace()[2].getMethodName()+"()*****");
         mUnbinder.unbind();
         mRxManager.clear();
-    }
-
-    public void showToast(String message){
-        Toast.makeText(this,message,Toast.LENGTH_SHORT).show();
     }
 
     /**

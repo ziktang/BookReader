@@ -13,6 +13,12 @@
     <!-- 自定义属性值 -->
     <string name="round">round</string>
     <string name="circle">circle</string>
+    <string name="file_import">已导入</string>
+    <string name="file_type_txt">.txt</string>
+    <string name="add_to_bookshelf">加入书架(%s)</string>
+    <string name="scan_file_num">已扫描%s个文件</string>
+    <string name="scan_book_num">扫描到%s本书</string>
+    <string name="remove_book">删除书籍()</string>
 
 
 </resources>

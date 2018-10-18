@@ -1,7 +1,6 @@
 package example.tctctc.com.tybookreader.bookshelf.presenter;
 
 import java.util.List;
-
 import example.tctctc.com.tybookreader.bean.BookBean;
 import example.tctctc.com.tybookreader.bookshelf.contact.ShelfContact;
 import io.reactivex.annotations.NonNull;
@@ -16,11 +15,12 @@ public class ShelfPresenter extends ShelfContact.Presenter {
 
     @Override
     public void onStart() {
+        mContext = mView.getContext();
     }
 
     @Override
     public void onLoadBookList() {
-        mModel.loadBookList().subscribe(new Consumer<List<BookBean>>() {
+        mModel.loadImportedBooksAsyn().subscribe(new Consumer<List<BookBean>>() {
             @Override
             public void accept(@NonNull List<BookBean> books) throws Exception {
                 mView.refreshBookList(books);
@@ -29,12 +29,7 @@ public class ShelfPresenter extends ShelfContact.Presenter {
     }
 
     @Override
-    public void onDeleteBooks(List<BookBean> books) {
-        mModel.removeBooks(books).subscribe(new Consumer<Boolean>() {
-            @Override
-            public void accept(@NonNull Boolean aBoolean) throws Exception {
-                onLoadBookList();
-            }
-        });
+    public void onDeleteBook(long bookId) {
+        mModel.removeBook(bookId);
     }
 }

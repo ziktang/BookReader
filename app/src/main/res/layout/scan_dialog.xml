@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:textSize="20dp"
         android:layout_weight="1"
+        android:text="正在扫描..."
         android:layout_height="80dp"/>
 
     <TextView

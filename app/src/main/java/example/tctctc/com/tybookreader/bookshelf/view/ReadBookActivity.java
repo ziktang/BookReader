@@ -28,11 +28,11 @@ import example.tctctc.com.tybookreader.bookshelf.adapter.DirectoryPageAdapter;
 import example.tctctc.com.tybookreader.bookshelf.common.DialogManager;
 import example.tctctc.com.tybookreader.bookshelf.common.PageManager;
 import example.tctctc.com.tybookreader.bookshelf.common.ReadConfig;
+import example.tctctc.com.tybookreader.common.barlibrary.ImmersionBar;
 import example.tctctc.com.tybookreader.utils.FontUtils;
 import example.tctctc.com.tybookreader.utils.StatusBarUtils;
 import example.tctctc.com.tybookreader.view.CustomDrawerLayout;
 import example.tctctc.com.tybookreader.view.ReadPageView;
-import hugo.weaving.DebugLog;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
 
@@ -96,7 +96,6 @@ public class ReadBookActivity extends BaseActivity implements ReadPageView.onTou
         initDrawer();
         initTopDialog();
         mPageManager.openBook();
-
 
         mRxManager.onEvent("close drawer", new Consumer<String>() {
             @Override
@@ -269,7 +268,8 @@ public class ReadBookActivity extends BaseActivity implements ReadPageView.onTou
         super.onWindowFocusChanged(hasFocus);
         Log.d(TAG, "*****" + Thread.currentThread().getStackTrace()[2].getMethodName() + "()*****");
         if (hasFocus) {
-            StatusBarUtils.setFullScreen(this);
+//            StatusBarUtils.setFullScreen(this);
+            ImmersionBar.with(this).fullScreen(true);
         }
     }
 
@@ -287,13 +287,15 @@ public class ReadBookActivity extends BaseActivity implements ReadPageView.onTou
         if (!isShow) {
             showTopView();
             mDialogManager.showBottomDialog();
-            StatusBarUtils.setTranslucent(this);
+//            StatusBarUtils.setTranslucent(this);
+            ImmersionBar.with(this).fullScreen(false);
             isMark(mPageManager.isMark());
             isShow = true;
         } else {
             hideTopView();
             mDialogManager.hideBottomDialog();
-            StatusBarUtils.setFullScreen(this);
+//            StatusBarUtils.setFullScreen(this);
+            ImmersionBar.with(this).fullScreen(true);
             isShow = false;
         }
     }
@@ -306,7 +308,6 @@ public class ReadBookActivity extends BaseActivity implements ReadPageView.onTou
         }
     }
 
-    @DebugLog
     @Override
     public boolean onUpdateNext(boolean isNext) {
         Log.d(TAG, "*****" + Thread.currentThread().getStackTrace()[2].getMethodName() + "()*****");
@@ -315,7 +316,8 @@ public class ReadBookActivity extends BaseActivity implements ReadPageView.onTou
         } else {
             hideTopView();
             mDialogManager.hideBottomDialog();
-            StatusBarUtils.setFullScreen(this);
+//            StatusBarUtils.setFullScreen(this);
+            ImmersionBar.with(this).fullScreen(true);
             isShow = false;
             return false;
         }

@@ -8,6 +8,8 @@ import example.tctctc.com.tybookreader.common.rx.RxManager;
  */
 
 public abstract class BasePresenter<M, V> {
+    protected final String TAG = this.getClass().getSimpleName();
+
     public M mModel;
     public V mView;
     public Context mContext;

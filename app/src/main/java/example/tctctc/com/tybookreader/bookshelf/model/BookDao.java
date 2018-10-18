@@ -1,15 +1,18 @@
 package example.tctctc.com.tybookreader.bookshelf.model;
 
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
-
 import org.greenrobot.greendao.query.QueryBuilder;
-
 import java.io.File;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import example.tctctc.com.tybookreader.BookApplication;
+import example.tctctc.com.tybookreader.R;
+import example.tctctc.com.tybookreader.app.Constant;
 import example.tctctc.com.tybookreader.bean.BookBean;
 import example.tctctc.com.tybookreader.bean.BookBeanDao;
 import example.tctctc.com.tybookreader.bean.DaoMaster;
@@ -17,21 +20,18 @@ import example.tctctc.com.tybookreader.bean.DaoSession;
 import example.tctctc.com.tybookreader.bookshelf.contact.ImportContact;
 import example.tctctc.com.tybookreader.bookshelf.contact.ScanContact;
 import example.tctctc.com.tybookreader.bookshelf.contact.ShelfContact;
-import example.tctctc.com.tybookreader.common.FileComparater;
 import example.tctctc.com.tybookreader.common.rx.RxSchedulers;
 import example.tctctc.com.tybookreader.utils.CollectionUtils;
 import example.tctctc.com.tybookreader.utils.FileUtils;
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Flowable;
-import io.reactivex.FlowableEmitter;
-import io.reactivex.FlowableOnSubscribe;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
+import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
-
-import static android.content.ContentValues.TAG;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * Created by tctctc on 2017/4/3.
@@ -42,33 +42,45 @@ public class BookDao implements ShelfContact.Model, ScanContact.Model, ImportCon
 
     private static final String dbName = "Book";
     private static BookBeanDao sDao;
-    private int totalNum;
-    private File mFile = new File("");
     public BookDao() {
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(BookApplication.getContext(), dbName);
         SQLiteDatabase db = helper.getWritableDatabase();
         DaoMaster master = new DaoMaster(db);
         DaoSession session = master.newSession();
         sDao = session.getBookBeanDao();
-//        sDao = getDao();
     }
 
-//    public static BookBeanDao getDao() {
-//        if (sDao == null) {
-//
-//        }
-//        return sDao;
-//    }
-
+    /**
+     * 获取所有书，包括已移除出书架但数据库有数据记录的
+     * @return
+     */
     public List<BookBean> loadAll(){
         QueryBuilder queryBuilder = sDao.queryBuilder();
         return queryBuilder.build().listLazy();
     }
 
     @Override
-    public List<File> getFileList(File rootFile) {
-        List<File> files = FileUtils.listFilterOneFolder(rootFile, ".txt");
+    public List<File> getFileList(Context context, File rootFile) {
+        List<File> files = FileUtils.listFilterOneFolder(rootFile, context.getString(R.string.file_type_txt), Constant.BookShelf.SCAN_BOOK_SIZE);
         return files;
+    }
+
+    /**
+     * 获取已导入到书架的书
+     * @return
+     */
+    @Override
+    public List<BookBean> loadImportedBooks() {
+        List<BookBean> bookBeans = new ArrayList<>();
+        bookBeans.addAll(loadAll());
+        Iterator<BookBean> iterator = bookBeans.iterator();
+        while (iterator.hasNext()){
+            BookBean bookBean = iterator.next();
+            if (bookBean.getStatus() != BookBean.BOOK_STATUS_IMPORT){
+                iterator.remove();
+            }
+        }
+        return bookBeans;
     }
 
 
@@ -93,29 +105,24 @@ public class BookDao implements ShelfContact.Model, ScanContact.Model, ImportCon
     }
 
     @Override
-    public Flowable<File> scanFile(final File file, final String rex) {
-        return Flowable.create(new FlowableOnSubscribe<File>() {
+    public Observable<File> scanFile(final File file, final String rex) {
+        return Observable.create(new ObservableOnSubscribe<File>() {
+
             @Override
-            public void subscribe(@NonNull FlowableEmitter<File> emitter) throws Exception {
-                listFiles(file, rex, emitter);
+            public void subscribe(ObservableEmitter<File> emitter) throws Exception {
+                listFiles(file,emitter);
                 emitter.onComplete();
             }
-        }, BackpressureStrategy.BUFFER)
-                .compose(RxSchedulers.<File>ioMainFlow());
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
     }
 
     @Override
-    public int getTotalNum() {
-        return totalNum;
-    }
-
-    @Override
-    public Observable<List<BookBean>> loadBookList() {
-        return Observable.just("all").map(new Function<String, List<BookBean>>() {
+    public Observable<List<BookBean>> loadImportedBooksAsyn() {
+        return Observable.create(new ObservableOnSubscribe<List<BookBean>>() {
             @Override
-            public List<BookBean> apply(@NonNull String s) throws Exception {
-                QueryBuilder queryBuilder = sDao.queryBuilder();
-                return queryBuilder.build().listLazy();
+            public void subscribe(ObservableEmitter<List<BookBean>> observableEmitter) throws Exception {
+                observableEmitter.onNext(loadImportedBooks());
+                observableEmitter.onComplete();
             }
         }).compose(RxSchedulers.<List<BookBean>>ioMain());
     }
@@ -126,18 +133,20 @@ public class BookDao implements ShelfContact.Model, ScanContact.Model, ImportCon
      * @param books
      * @return
      */
-    @Override
     public Observable<Boolean> removeDeleteBooks(List<BookBean> books) {
         return Observable.just(books).map(new Function<List<BookBean>, Boolean>() {
             @Override
             public Boolean apply(@NonNull List<BookBean> books) throws Exception {
                 //从书架数据库删除数据
-                if (!CollectionUtils.isEmpty(books))
+                if (!CollectionUtils.isEmpty(books)){
                     sDao.deleteInTx(books);
+                }
                 //删除源文件
                 for (BookBean bean : books) {
                     File file = new File(bean.getPath());
-                    if (file.exists()) file.delete();
+                    if (file.exists()){
+                        file.delete();
+                    }
                 }
                 return true;
             }
@@ -151,29 +160,37 @@ public class BookDao implements ShelfContact.Model, ScanContact.Model, ImportCon
      * @param books
      * @return
      */
-    @Override
     public Observable<Boolean> removeBooks(List<BookBean> books) {
         return Observable.just(books).map(new Function<List<BookBean>, Boolean>() {
             @Override
             public Boolean apply(@NonNull List<BookBean> books) throws Exception {
-                if (!CollectionUtils.isEmpty(books))
-                    sDao.deleteInTx(books);
+                //仅仅移除出书架，设置为移除状态
+                if (!CollectionUtils.isEmpty(books)){
+                    for (BookBean bookBean:books){
+                        bookBean.setStatus(BookBean.BOOK_STATUS_REMOVE);
+                    }
+                    sDao.updateInTx(books);
+                }
                 return true;
             }
         }).compose(RxSchedulers.<Boolean>ioMain());
     }
 
-    public void listFiles(File file, final String rex, @NonNull FlowableEmitter<File> emitter) {
+    @Override
+    public void removeBook(long bookId) {
+        sDao.deleteByKey(bookId);
+    }
+
+    public void listFiles(File file, @NonNull ObservableEmitter<File> emitter) {
+        if (file == null || !file.exists() || file.isFile()){
+            return;
+        }
         File[] files = file.listFiles();
         for (File f : files) {
-            totalNum++;
-            if (f.isFile() && f.getName().endsWith(rex) && f.length() > 20 * 1024f) {
+            if (f.isFile() && f.getName().endsWith(Constant.BookShelf.FILE_TYPE_TXT) && f.length() > Constant.BookShelf.SCAN_BOOK_SIZE) {
                 emitter.onNext(f);
             } else if (f.isDirectory() && !f.isHidden()) {
-                listFiles(f, rex, emitter);
-            }
-            if (f.isDirectory()){
-//                Log.d("AAA","name:"+f.getName()+"----isHidden:"+f.isHidden()+"---length:"+f.length());
+                listFiles(f,emitter);
             }
         }
     }

@@ -1,19 +1,15 @@
 package example.tctctc.com.tybookreader.bookshelf.presenter;
 
 import android.util.Log;
-
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import example.tctctc.com.tybookreader.app.Constant;
 import example.tctctc.com.tybookreader.bean.BookBean;
-import example.tctctc.com.tybookreader.bean.ScanBook;
+import example.tctctc.com.tybookreader.bean.ScanFile;
 import example.tctctc.com.tybookreader.bookshelf.contact.ScanContact;
-import example.tctctc.com.tybookreader.common.rx.RxSchedulers;
 import example.tctctc.com.tybookreader.utils.FileUtils;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -28,24 +24,21 @@ import io.reactivex.functions.Consumer;
 
 public class ScanPresenter extends ScanContact.Presenter {
 
-    public static final String TAG = "ScanPresenter";
-
-    private Subscriber<File> mSubscriber;
-    private Subscription mSubscription;
     private Disposable mDisposable;
+    private List<BookBean> mImportBookBeans;
 
     @Override
-    public void onAddBooks(List<ScanBook> scanBooks) {
+    public void onAddBooks(List<ScanFile> scanFiles) {
         List<BookBean> list = new ArrayList<>();
-        for (ScanBook scanBook : scanBooks) {
-            File file = scanBook.getFile();
+        for (ScanFile scanFile : scanFiles) {
+            File file = scanFile.getFile();
             BookBean bean = new BookBean();
             //找出最后一个"."的位置，以此隔离出名字和后缀
             int i = file.getName().lastIndexOf(".");
             bean.setBookName(file.getName().substring(0, i));
-            bean.setMBookType(1);
+            bean.setBookType(BookBean.BOOK_TYPE_LOCAL);
             bean.setFileSize(FileUtils.getFileSize(file));
-//            bean.setLength(file.length());
+            bean.setStatus(BookBean.BOOK_STATUS_IMPORT);
             bean.setPath(file.getAbsolutePath());
             list.add(bean);
         }
@@ -61,100 +54,68 @@ public class ScanPresenter extends ScanContact.Presenter {
     }
 
     @Override
-    public void onStartScanBooks(File file, String rex) {
+    public void onStartScanBooks(final File file, final String rex) {
         mView.whenStartScan();
+        mImportBookBeans = mModel.loadImportedBooks();
+//        Observable.just(1).delay(500, TimeUnit.MILLISECONDS).subscribe(new Consumer<Integer>() {
+//            @Override
+//            public void accept(Integer integer) throws Exception {
+                mModel.scanFile(file, rex).subscribe(new Observer<File>() {
+                    @Override
+                    public void onSubscribe(Disposable disposable) {
+                        mDisposable = disposable;
+                        mRxManager.add(disposable);
+                    }
 
-        Observable.interval(16, TimeUnit.MILLISECONDS).compose(RxSchedulers.<Long>ioMain()).subscribe(new Observer<Long>() {
-            @Override
-            public void onSubscribe(@NonNull Disposable d) {
-                mDisposable = d;
-            }
-            @Override
-            public void onNext(@NonNull Long aLong) {
-                mView.refresh(mModel.getTotalNum());
-            }
-            @Override
-            public void onError(@NonNull Throwable e) {
-            }
-            @Override
-            public void onComplete() {
-            }
-        });
+                    @Override
+                    public void onNext(File file) {
+                        Log.i(TAG,"thread id :"+Thread.currentThread().getId());
+                        if (file.exists()) {
+                            ScanFile scanFile = new ScanFile(file, false);
+                            if (isImported(file)){
+                                scanFile.setImported(true);
+                            }
+                            mView.whenScan(scanFile);
+                        }
+                    }
 
-        mSubscriber = new Subscriber<File>() {
-            @Override
-            public void onSubscribe(Subscription s) {
-                s.request(Long.MAX_VALUE);
-                mSubscription = s;
-            }
+                    @Override
+                    public void onError(Throwable throwable) {
+                        mView.whenStopScan();
+                    }
 
-            @Override
-            public void onNext(File file) {
-                mView.whenScan(file);
-            }
-
-            @Override
-            public void onError(@NonNull Throwable e) {
-                mView.whenStopScan();
-            }
-
-            @Override
-            public void onComplete() {
-                onStopScanBooks();
-            }
-        };
-        mModel.scanFile(file, rex)
-                .subscribe(mSubscriber);
+                    @Override
+                    public void onComplete() {
+                        mView.whenStopScan();
+                    }
+                });
+//            }
+//        });
     }
 
 
     @Override
     public void onStopScanBooks() {
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        Log.i("AAA","onStopScanBooks");
-        mSubscription.cancel();
-        Log.i("AAA","cancel");
+        Log.i(TAG,"onStopScanBooks");
         mDisposable.dispose();
         mView.whenStopScan();
-        mView.refresh(mModel.getTotalNum());
+    }
+
+    private boolean isImported(File file){
+        if (file == null || !file.exists() ||file.isFile()){
+            return false;
+        }
+        for (BookBean bookBean:mImportBookBeans){
+            if (bookBean.getPath()!=null&&bookBean.getPath().equals(file.getAbsolutePath())){
+                return true;
+            }
+        }
+        return false;
     }
 
 
     @Override
     public void onStart() {
-
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mSubscription.cancel();
-        mDisposable.dispose();
+        mContext = mView.getContext();
     }
 }

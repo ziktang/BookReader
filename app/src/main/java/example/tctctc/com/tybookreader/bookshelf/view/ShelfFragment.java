@@ -1,21 +1,20 @@
 package example.tctctc.com.tybookreader.bookshelf.view;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.view.WindowManager;
+import android.widget.PopupWindow;
 import android.widget.TextView;
-
+import android.widget.Toast;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import butterknife.BindView;
 import butterknife.OnClick;
 import example.tctctc.com.tybookreader.R;
@@ -40,23 +39,10 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
     @BindView(R.id.add_book)
     FloatingActionButton mAddBookBt;
 
-    @BindView(R.id.book_operate)
-    LinearLayout mBookOperate;
-
-    @BindView(R.id.book_delete)
-    TextView mBookDelete;
-
-    @BindView(R.id.book_all_select)
-    TextView mBookAllSelect;
-
     private ShelfBookAdapter mAdapter;
     private List<BookBean> mBooks;
 
-    private List<BookBean> mSelectBooks;
-
     private ShelfPresenter mPresenter;
-
-    private boolean isSelectAll;
 
     @Override
     protected void initView() {
@@ -77,7 +63,6 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
         mBookRecycle.setAdapter(mAdapter);
         mBookRecycle.setLongClickable(true);
         mBookRecycle.addItemDecoration(new GridSpacingItemDecoration(3, 80, true));
-        mSelectBooks = new ArrayList<>();
         mPresenter = new ShelfPresenter();
         mPresenter.setVM(new BookDao(), this);
         mPresenter.onLoadBookList();
@@ -85,48 +70,23 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
     }
 
     @Override
-    public void OnLongClick() {
-        mBookOperate.setVisibility(View.VISIBLE);
-        mAddBookBt.setVisibility(View.INVISIBLE);
+    public void OnLongClick(int position,View view) {
+        Toast.makeText(getContext(),"长按书本",Toast.LENGTH_SHORT).show();
+        showBookLongClickMenu(position,view);
     }
 
     @Override
-    public void OnBookClick(BookBean bookBean) {
+    public void OnBookClick(int position,View view) {
         Intent intent = new Intent(getActivity(), ReadBookActivity.class);
-        intent.putExtra("book", bookBean);
+        intent.putExtra("book", mBooks.get(position));
         startActivity(intent);
     }
 
-    @Override
-    public void selectBook(BookBean bookBean) {
-        mSelectBooks.add(bookBean);
-        mBookDelete.setText("删除书籍(" + mSelectBooks.size() + ")");
-        if (mSelectBooks.size() == mBooks.size()) {
-            isSelectAll = true;
-            mBookAllSelect.setText(getResources().getString(R.string.all_un_select));
-        }
-    }
 
-    @Override
-    public void unSelectBook(BookBean bookBean) {
-        mSelectBooks.remove(bookBean);
-        mBookDelete.setText("删除书籍(" + mSelectBooks.size() + ")");
-        if (mSelectBooks.size() < mBooks.size()) {
-            isSelectAll = false;
-            mBookAllSelect.setText(getResources().getString(R.string.all_select));
-        }
-    }
-
-    @OnClick({R.id.book_delete, R.id.book_all_select, R.id.add_book})
+    @OnClick({R.id.add_book})
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.book_delete:
-                mPresenter.onDeleteBooks(mSelectBooks);
-                break;
-            case R.id.book_all_select:
-                allSelectBook(mAdapter.getBookMap());
-                break;
             case R.id.add_book:
                 Intent intent = new Intent(getActivity(), ImportBookActivity.class);
                 getActivity().startActivity(intent);
@@ -134,56 +94,67 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
         }
     }
 
-    private void allSelectBook(HashMap<BookBean, Integer> bookMap) {
-        //本来是全不选状态,此时按钮应该显示的是全选，所以点击之后变成全不选
-        if (!isSelectAll) {
-            for (Map.Entry<BookBean, Integer> entry : bookMap.entrySet()) {
-                if (entry.getValue() == 2) {
-                    entry.setValue(1);
-                    selectBook(entry.getKey());
-                }
-            }
-        }
-        //本来是全选状态,此时按钮应该显示的是全不选，所以点击之后变成全选
-        else {
-            for (Map.Entry<BookBean, Integer> entry : bookMap.entrySet()) {
-                if (entry.getValue() == 1) {
-                    entry.setValue(2);
-                    unSelectBook(entry.getKey());
-                }
-            }
-        }
-        mAdapter.notifyDataSetChanged();
-    }
-
     @Override
     public void refreshBookList(List<BookBean> books) {
         mBooks.clear();
         mBooks.addAll(books);
-        exitLongClick();
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mPresenter != null)
+        if (mPresenter != null){
             mPresenter.onDestroy();
-        mPresenter = null;
+            mPresenter = null;
+        }
     }
 
-    public void exitLongClick() {
-        mAdapter.statusInit();
-        mBookOperate.setVisibility(View.INVISIBLE);
-        mBookAllSelect.setText("全选");
-        mAddBookBt.setVisibility(View.VISIBLE);
-        mAdapter.notifyDataSetChanged();
+    public void showBookLongClickMenu(int position,View view) {
+        PopupWindow popupWindow  = new PopupWindow();
+        View contentView = buildBookLongClickMenuView(position,popupWindow);
+        if (contentView == null){
+            return;
+        }
+        popupWindow.setContentView(contentView);
+        popupWindow.setWidth(WindowManager.LayoutParams.WRAP_CONTENT);
+        popupWindow.setHeight(WindowManager.LayoutParams.WRAP_CONTENT);
+        popupWindow.setOutsideTouchable(true);
+        popupWindow.setFocusable(true);
+        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        popupWindow.setContentView(contentView);
+
+        popupWindow.showAsDropDown(view,view.getMeasuredWidth()/2,-view.getMeasuredHeight()/2);
     }
 
-    public boolean onBackPressed() {
-        if (mAdapter.isLongClick()) {
-            mAdapter.statusInit();
-            exitLongClick();
-            return true;
-        } else return false;
+
+    private View buildBookLongClickMenuView(final int position, final PopupWindow popupWindow){
+        final BookBean bookBean = mBooks.get(position);
+        if (bookBean.getBookType() == BookBean.BOOK_TYPE_LOCAL){
+            View view = View.inflate(getContext(),R.layout.menu_book_long_click_local,null);
+
+            View.OnClickListener onBookMenuClickListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    switch (v.getId()) {
+                        //移除book
+                        case R.id.remove:
+                            mBooks.remove(position);
+                            mAdapter.notifyItemChanged(position);
+                            mPresenter.onDeleteBook(bookBean.getBookId());
+                            popupWindow.dismiss();
+                            break;
+                    }
+                }
+            };
+
+            TextView deleteTv = view.findViewById(R.id.remove);
+            deleteTv.setOnClickListener(onBookMenuClickListener);
+
+            return view;
+        }else{
+
+        }
+        return null;
     }
 }
