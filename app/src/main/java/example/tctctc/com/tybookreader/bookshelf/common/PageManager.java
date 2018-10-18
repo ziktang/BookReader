@@ -403,8 +403,9 @@ public class PageManager {
 
         canvas.drawRoundRect(mBtInnerRectF, 10, 10, mBorderPaint);
 
-        if (isUpdate)
+        if (isUpdate){
             mReadPageView.postInvalidate();
+        }
         Log.d(TAG, "*****" + Thread.currentThread().getStackTrace()[2].getMethodName() + "()*****");
     }
 

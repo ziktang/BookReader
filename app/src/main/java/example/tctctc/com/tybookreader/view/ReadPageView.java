@@ -5,15 +5,11 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.Scroller;
-import android.widget.Toast;
-
 import example.tctctc.com.tybookreader.bookshelf.common.PageManager;
 import example.tctctc.com.tybookreader.bookshelf.common.ReadConfig;
 import example.tctctc.com.tybookreader.bookshelf.pageAnimation.AnimationProvider;
@@ -29,10 +25,6 @@ import example.tctctc.com.tybookreader.bookshelf.pageAnimation.SlideAnimation;
 public class ReadPageView extends View {
 
     public static final String TAG = "ReadPageView";
-
-    private Context mContext;
-    private int mTotalWidth;
-    private int mTotalHeight;
 
     private Bitmap[] mBitmaps;
 
@@ -75,30 +67,12 @@ public class ReadPageView extends View {
 
     public ReadPageView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        mContext = context;
         init();
     }
 
 
     private void init() {
-
-        WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics metric = new DisplayMetrics();
-        wm.getDefaultDisplay().getMetrics(metric);
-        mTotalWidth = metric.widthPixels;
-        mTotalHeight = metric.heightPixels;
-
-        Bitmap mCurrentBitmap = Bitmap.createBitmap(mTotalWidth, mTotalHeight, Bitmap.Config.RGB_565);
-        Bitmap mNextBitmap = Bitmap.createBitmap(mTotalWidth, mTotalHeight, Bitmap.Config.RGB_565);
-        Bitmap mLastBitmap = Bitmap.createBitmap(mTotalWidth, mTotalHeight, Bitmap.Config.RGB_565);
-
-        mBitmaps = new Bitmap[]{mLastBitmap, mCurrentBitmap, mNextBitmap};
         mScroller = new Scroller(getContext(), new DecelerateInterpolator());
-
-        mCenterRect = new Rect(mTotalWidth * 1 / 5, 0, mTotalWidth * 4 / 5, mTotalHeight);
-        mLeftRect = new Rect(0, 0, mTotalWidth * 1 / 5, mTotalHeight);
-        mRightRect = new Rect(mTotalWidth * 4 / 5, 0, mTotalWidth, mTotalHeight);
-
 //
 //        Field field = null; // 通过View类得到字段，不能通过实例得到字段。
 //        field = View.class.getDeclaredField("mTouchSlop");
@@ -112,16 +86,16 @@ public class ReadPageView extends View {
     public void setPageMode(int pageMode) {
         switch (pageMode) {
             case ReadConfig.TURN_NO:
-                mAnimationProvider = new NoAnimation(mBitmaps, mTotalWidth, mTotalHeight);
+                mAnimationProvider = new NoAnimation(mBitmaps, getWidth(), getHeight());
                 break;
             case ReadConfig.TURN_COVER:
-                mAnimationProvider = new CoverAnimation(mBitmaps, mTotalWidth, mTotalHeight);
+                mAnimationProvider = new CoverAnimation(mBitmaps, getWidth(), getHeight());
                 break;
             case ReadConfig.TURN_SLIDE:
-                mAnimationProvider = new SlideAnimation(mBitmaps, mTotalWidth, mTotalHeight);
+                mAnimationProvider = new SlideAnimation(mBitmaps, getWidth(), getHeight());
                 break;
             default:
-                mAnimationProvider = new CoverAnimation(mBitmaps, mTotalWidth, mTotalHeight);
+                mAnimationProvider = new CoverAnimation(mBitmaps, getWidth(), getHeight());
                 break;
 //            case ReadConfig.TURN_PAPER:
 //                Toast.makeText(getContext(), "仿真模式", Toast.LENGTH_SHORT).show();
@@ -131,7 +105,41 @@ public class ReadPageView extends View {
     }
 
     @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        int width = MeasureSpec.getSize(widthMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
+
+        log("width:"+width + "  height:" + height );
+
+        Bitmap mCurrentBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        Bitmap mNextBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        Bitmap mLastBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+
+        mBitmaps = new Bitmap[]{mLastBitmap, mCurrentBitmap, mNextBitmap};
+
+        mCenterRect = new Rect(width * 1 / 5, 0, width * 4 / 5, height);
+        mLeftRect = new Rect(0, 0, width * 1 / 5, height);
+        mRightRect = new Rect(width * 4 / 5, 0, width, height);
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+
+        log("width:"+w + "  height:" + h + "  oldw:"+oldw + "  oldh:" + oldh );
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        super.onLayout(changed, left, top, right, bottom);
+        log("width:"+(right - left) + "  height:" + (bottom - top) );
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
+        log("onDraw" );
         if (isMove) {
             mAnimationProvider.drawAnima(canvas);
         } else {

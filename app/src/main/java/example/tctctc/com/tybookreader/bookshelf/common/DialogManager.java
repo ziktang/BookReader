@@ -229,9 +229,9 @@ public class DialogManager implements PageManager.PageEvent {
 
     //底部一级dialog，目录，字体，背景，翻页，设置
     public void setBottomDialog() {
-        mRxManager.onEvent("length", new Consumer<Long>() {
+        mRxManager.onEvent("length", new Consumer<Integer>() {
             @Override
-            public void accept(@NonNull Long aLong) throws Exception {
+            public void accept(@NonNull Integer integer) throws Exception {
                 readProgress.setMax((int) mBookBean.getLength() - 1);
             }
         });
@@ -240,8 +240,7 @@ public class DialogManager implements PageManager.PageEvent {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 float perProgress = (float) progress / (float) readProgress.getMax();
-                if (mReadProgressTv.getVisibility() != View.VISIBLE)
-                    mReadProgressTv.setVisibility(View.VISIBLE);
+                mReadProgressTv.setVisibility(View.VISIBLE);
                 mReadProgressTv.setText(mDecimalFormat.format(perProgress * 100) + "%");
             }
 
@@ -251,7 +250,6 @@ public class DialogManager implements PageManager.PageEvent {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mReadProgressTv.setVisibility(View.INVISIBLE);
                 Log.d(TAG,"max:"+seekBar.getMax());
                 Log.d(TAG,"progress"+seekBar.getProgress());
                 mPageManager.changeProgress(seekBar.getProgress());

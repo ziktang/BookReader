@@ -51,8 +51,6 @@ public class ScanBookActivity extends BaseActivity implements FileScanAdapter.On
     @BindView(R.id.scan_toolbar)
     Toolbar mToolbar;
 
-    private boolean isSelectAll;
-
     private List<ScanFile> mScanFiles;
     private FileScanAdapter mAdapter;
 

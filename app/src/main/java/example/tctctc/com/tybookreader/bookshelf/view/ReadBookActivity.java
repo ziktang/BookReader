@@ -28,6 +28,7 @@ import example.tctctc.com.tybookreader.bookshelf.adapter.DirectoryPageAdapter;
 import example.tctctc.com.tybookreader.bookshelf.common.DialogManager;
 import example.tctctc.com.tybookreader.bookshelf.common.PageManager;
 import example.tctctc.com.tybookreader.bookshelf.common.ReadConfig;
+import example.tctctc.com.tybookreader.common.barlibrary.BarHide;
 import example.tctctc.com.tybookreader.common.barlibrary.ImmersionBar;
 import example.tctctc.com.tybookreader.utils.FontUtils;
 import example.tctctc.com.tybookreader.utils.StatusBarUtils;
@@ -81,21 +82,26 @@ public class ReadBookActivity extends BaseActivity implements ReadPageView.onTou
     protected void initView(View contextView) {
         Log.d(TAG, "*****" + Thread.currentThread().getStackTrace()[2].getMethodName() + "()*****");
 
-        StatusBarUtils.setTranslucent(this);
         mBookBean = (BookBean) getIntent().getSerializableExtra("book");
 
         mConfig = new ReadConfig(this);
-        mReadPageView.setTouchListener(this);
-        mReadPageView.setPageMode(mConfig.getPageTurnType());
 
         mDialogManager = DialogManager.getInstance(this, mBookBean, mView);
         mPageManager = PageManager.getInstance(this, mBookBean);
         mDialogManager.setPageManager(mPageManager);
 
-        mPageManager.setReadPageView(mReadPageView);
+
+        mReadPageView.post(new Runnable() {
+            @Override
+            public void run() {
+                mReadPageView.setTouchListener(ReadBookActivity.this);
+                mReadPageView.setPageMode(mConfig.getPageTurnType());
+                mPageManager.setReadPageView(mReadPageView);
+                mPageManager.openBook();
+            }
+        });
         initDrawer();
         initTopDialog();
-        mPageManager.openBook();
 
         mRxManager.onEvent("close drawer", new Consumer<String>() {
             @Override
@@ -189,7 +195,7 @@ public class ReadBookActivity extends BaseActivity implements ReadPageView.onTou
 
     @Override
     protected void initParams() {
-
+        ImmersionBar.with(this).fullScreen(true).hideBar(BarHide.FLAG_HIDE_BAR).init();
     }
 
     @Override
@@ -262,17 +268,6 @@ public class ReadBookActivity extends BaseActivity implements ReadPageView.onTou
 
     }
 
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        Log.d(TAG, "*****" + Thread.currentThread().getStackTrace()[2].getMethodName() + "()*****");
-        if (hasFocus) {
-//            StatusBarUtils.setFullScreen(this);
-            ImmersionBar.with(this).fullScreen(true);
-        }
-    }
-
     @Override
     protected void onPause() {
         Log.d(TAG, "*****" + Thread.currentThread().getStackTrace()[2].getMethodName() + "()*****");
@@ -287,15 +282,13 @@ public class ReadBookActivity extends BaseActivity implements ReadPageView.onTou
         if (!isShow) {
             showTopView();
             mDialogManager.showBottomDialog();
-//            StatusBarUtils.setTranslucent(this);
-            ImmersionBar.with(this).fullScreen(false);
+            ImmersionBar.with(this).hideBar(BarHide.FLAG_HIDE_NAVIGATION_BAR).fullScreen(false).init();
             isMark(mPageManager.isMark());
             isShow = true;
         } else {
             hideTopView();
             mDialogManager.hideBottomDialog();
-//            StatusBarUtils.setFullScreen(this);
-            ImmersionBar.with(this).fullScreen(true);
+            ImmersionBar.with(this).fullScreen(true).hideBar(BarHide.FLAG_HIDE_BAR).init();
             isShow = false;
         }
     }
@@ -316,8 +309,7 @@ public class ReadBookActivity extends BaseActivity implements ReadPageView.onTou
         } else {
             hideTopView();
             mDialogManager.hideBottomDialog();
-//            StatusBarUtils.setFullScreen(this);
-            ImmersionBar.with(this).fullScreen(true);
+            ImmersionBar.with(this).fullScreen(true).hideBar(BarHide.FLAG_HIDE_BAR).init();
             isShow = false;
             return false;
         }
