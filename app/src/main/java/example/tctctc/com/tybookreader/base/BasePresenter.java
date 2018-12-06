@@ -24,6 +24,6 @@ public abstract class BasePresenter<M, V> {
     abstract public void onStart();
 
     public void onDestroy() {
-        mRxManager.clear();
+        mRxManager.clear(this);
     }
 }

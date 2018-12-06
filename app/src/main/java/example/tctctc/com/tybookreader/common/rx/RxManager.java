@@ -4,11 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
+import vite.rxbus.RxBus;
 
 /**
  * Created by tctctc on 2017/3/18.
@@ -18,7 +16,6 @@ import io.reactivex.functions.Consumer;
  */
 public class RxManager {
 
-    public Rxbus mRxbus = Rxbus.get();
 
     //管理Rxbus订阅
     private Map<Object,Observable<?>> mObservableMaps = new HashMap<>();
@@ -26,25 +23,39 @@ public class RxManager {
     private CompositeDisposable mDisposable = new CompositeDisposable();
 
     /**
-     * 注入监听
-     * @param tag
-     * @param action1
+     * 在需要接收event的类中调用
+     * @param entity
      */
-    public <T>void onEvent(Object tag, Consumer<T> action1){
-        Observable<T> observable = mRxbus.register(tag);
-        mObservableMaps.put(tag,observable);
-        mDisposable.add(observable.observeOn(AndroidSchedulers.mainThread()).subscribe(action1, new Consumer<Throwable>() {
-            @Override
-            public void accept(@NonNull Throwable throwable) throws Exception {
-                throwable.printStackTrace();
-            }
-        }));
+    public void registerBus(Object entity) {
+        RxBus.register(entity);
+    }
 
+
+//    /**
+//     * 注入监听
+//     * @param tag
+//     * @param action1
+//     */
+//    public <T>void onEvent(Object tag, Consumer<T> action1){
+//        Observable<T> observable = mRxbus.register(tag);
+//        mObservableMaps.put(tag,observable);
+//        mDisposable.add(observable.observeOn(AndroidSchedulers.mainThread()).subscribe(action1, new Consumer<Throwable>() {
+//            @Override
+//            public void accept(@NonNull Throwable throwable) throws Exception {
+//                throwable.printStackTrace();
+//            }
+//        }));
+
+//    }
+
+    //发送消息
+    public void post(String tag,Object content){
+        RxBus.post(tag,content);
     }
 
     //发送消息
-    public void post(Object tag,Object content){
-        mRxbus.post(tag,content);
+    public void post(Object content){
+        RxBus.post(content);
     }
 
     //管理添加
@@ -55,10 +66,11 @@ public class RxManager {
     /**
      * 清理所有的监听和订阅，防止内存泄露
      */
-    public void clear(){
+    public void clear(Object entity){
         mDisposable.dispose();
-        for (Map.Entry<Object, Observable<?>> entry : mObservableMaps.entrySet()) {
-            mRxbus.unRegister(entry.getKey(),entry.getValue());
-        }
+        RxBus.unregister(entity);
+//        for (Map.Entry<Object, Observable<?>> entry : mObservableMaps.entrySet()) {
+//            mRxbus.unRegister(entry.getKey(),entry.getValue());
+//        }
     }
 }

@@ -1,19 +1,17 @@
 package example.tctctc.com.tybookreader.bean;
 
-import android.util.Log;
-
 /**
  * Created by tctctc on 2017/3/28.
  * Function:
  */
 
-public class Directory {
+public class Chapter {
     private String name;
     private String path;
     private int startPosition;
     private int endPosition;
 
-    public Directory(String name, int startPosition) {
+    public Chapter(String name, int startPosition) {
         this.name = name;
         this.startPosition = startPosition;
     }

@@ -19,6 +19,8 @@
     <string name="scan_file_num">已扫描%s个文件</string>
     <string name="scan_book_num">扫描到%s本书</string>
     <string name="remove_book">删除书籍()</string>
+    <string name="search_store_empty_list">啥也没搜到。。。</string>
+    <string name="store_search_hint">书名</string>
 
 
 </resources>

@@ -27,5 +27,5 @@ public abstract class BaseComparator<T> implements Comparator<T>{
         }
     }
 
-    abstract int realCompare(T t1,T t2);
+    protected abstract int realCompare(T t1, T t2);
 }

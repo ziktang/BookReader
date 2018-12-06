@@ -7,13 +7,21 @@ android {
     buildToolsVersion "27.0.3"
     defaultConfig {
         applicationId "example.tctctc.com.tybookreader"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
+        debug {
+            // 移除无用的resource文件
+            shrinkResources false
+            debuggable true
+            minifyEnabled false
+            //混淆文件
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -49,6 +57,13 @@ dependencies {
     //Rx
     compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
     compile 'io.reactivex.rxjava2:rxjava:2.1.0'
+
+    //jsoup
+    compile 'org.jsoup:jsoup:1.11.3'
+
+    //RxBus
+    compile 'com.github.vitess:rxbus:2.0.3'
+    annotationProcessor 'com.github.vitess:rxbus-compiler:2.0.3'
 
     implementation ('com.yanzhenjie:permission:2.0.0-rc12'){
         exclude group: "com.android.support"

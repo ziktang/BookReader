@@ -36,6 +36,9 @@ import example.tctctc.com.tybookreader.utils.SelectManager;
 import example.tctctc.com.tybookreader.view.SelectView;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
+import vite.rxbus.RxThread;
+import vite.rxbus.Subscribe;
+import vite.rxbus.ThreadType;
 
 import static example.tctctc.com.tybookreader.R.id.directory;
 import static example.tctctc.com.tybookreader.R.id.page_turn;
@@ -121,6 +124,7 @@ public class DialogManager implements PageManager.PageEvent {
         mUnbinder = ButterKnife.bind(this, btmView);
         mBtmView = btmView;
         mRxManager = new RxManager();
+        mRxManager.registerBus(this);
         setBottomDialog();
         setFontDialog(mConfigBean.getFontSize(), mConfigBean.getFontType());
         setBackgroundDialog(mConfigBean.getBackground(), mConfigBean.getBrightness());
@@ -152,6 +156,8 @@ public class DialogManager implements PageManager.PageEvent {
                 break;
             case R.id.last_chapter:
                 mPageManager.lastChapter();
+                break;
+            default:
                 break;
 
         }
@@ -227,14 +233,21 @@ public class DialogManager implements PageManager.PageEvent {
         }
     }
 
+
+    @Subscribe("length")
+    @RxThread(ThreadType.MainThread)
+    public void setMaxProgress(int value){
+        readProgress.setMax((int) mBookBean.getLength() - 1);
+    }
+
     //底部一级dialog，目录，字体，背景，翻页，设置
     public void setBottomDialog() {
-        mRxManager.onEvent("length", new Consumer<Integer>() {
-            @Override
-            public void accept(@NonNull Integer integer) throws Exception {
-                readProgress.setMax((int) mBookBean.getLength() - 1);
-            }
-        });
+//        mRxManager.onEvent("length", new Consumer<Integer>() {
+//            @Override
+//            public void accept(@NonNull Integer integer) throws Exception {
+//                  readProgress.setMax((int) mBookBean.getLength() - 1);
+//            }
+//        });
         readProgress.setProgress(mBookBean.getProgress());
         readProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -338,11 +351,13 @@ public class DialogManager implements PageManager.PageEvent {
     }
 
     private void showDirectory() {
-        mRxManager.post("open drawer", "");
+        mRxManager.post("openDrawer",1);
     }
 
     private void defaultBright() {
-        if (mConfigBean.getBrightness() == -1) return;
+        if (mConfigBean.getBrightness() == -1){
+            return;
+        }
         int bright = 0;
         try {
             bright = Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREEN_BRIGHTNESS);
@@ -445,7 +460,7 @@ public class DialogManager implements PageManager.PageEvent {
 
     public void destroy() {
         mUnbinder.unbind();
-        mRxManager.clear();
+        mRxManager.clear(this);
         mPageManager = null;
         mContext = null;
         mDialogManager = null;

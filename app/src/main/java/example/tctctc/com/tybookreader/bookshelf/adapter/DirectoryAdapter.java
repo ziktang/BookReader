@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import example.tctctc.com.tybookreader.R;
-import example.tctctc.com.tybookreader.bean.Directory;
+import example.tctctc.com.tybookreader.bean.Chapter;
 
 /**
  * Created by tctctc on 2017/4/7.
@@ -22,19 +22,19 @@ import example.tctctc.com.tybookreader.bean.Directory;
 public class DirectoryAdapter extends RecyclerView.Adapter<DirectoryAdapter.DirectoryViewHolder> {
 
 
-    private List<Directory> mDirectoryList = new ArrayList();
+    private List<Chapter> mChapterList = new ArrayList();
     private Context mContext;
     private LayoutInflater mInflater;
 
     private OnDirectoryListener mDirectoryListener;
 
     public interface OnDirectoryListener {
-        void onCLick(Directory directory);
+        void onCLick(Chapter chapter);
     }
 
 
-    public DirectoryAdapter(Context context, List<Directory> directories,OnDirectoryListener listener) {
-        mDirectoryList = directories;
+    public DirectoryAdapter(Context context, List<Chapter> directories, OnDirectoryListener listener) {
+        mChapterList = directories;
         mContext = context;
         mInflater = LayoutInflater.from(mContext);
         mDirectoryListener = listener;
@@ -48,12 +48,12 @@ public class DirectoryAdapter extends RecyclerView.Adapter<DirectoryAdapter.Dire
 
     @Override
     public void onBindViewHolder(DirectoryViewHolder holder, int position) {
-        holder.setData(mDirectoryList.get(position));
+        holder.setData(mChapterList.get(position));
     }
 
     @Override
     public int getItemCount() {
-        return mDirectoryList == null ? 0 : mDirectoryList.size();
+        return mChapterList == null ? 0 : mChapterList.size();
     }
 
     public class DirectoryViewHolder extends RecyclerView.ViewHolder {
@@ -65,13 +65,13 @@ public class DirectoryAdapter extends RecyclerView.Adapter<DirectoryAdapter.Dire
             mChapterName = (TextView) itemView.findViewById(R.id.chapterName);
         }
 
-        public void setData(Directory directory) {
-            mChapterName.setText(directory.getName());
-            Log.i("bbb",directory.getName()+"  start:"+directory.getStartPosition());
+        public void setData(Chapter chapter) {
+            mChapterName.setText(chapter.getName());
+            Log.i("bbb", chapter.getName()+"  start:"+ chapter.getStartPosition());
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mDirectoryListener.onCLick(mDirectoryList.get(getAdapterPosition()));
+                    mDirectoryListener.onCLick(mChapterList.get(getAdapterPosition()));
                 }
             });
         }

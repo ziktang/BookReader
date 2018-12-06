@@ -41,7 +41,7 @@
     <color name="follow_read_gray">#383429</color>
 
     <color name="follow_read_black">#000000</color>
-    <color name="follow_read_white">#888888</color>
+    <color name="follow_read_white">#FFFFFF</color>
 
 
 </resources>

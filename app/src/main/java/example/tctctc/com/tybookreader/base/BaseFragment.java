@@ -20,7 +20,7 @@ import static example.tctctc.com.tybookreader.BookApplication.getContext;
  * Created by tctctc on 2016/11/25.
  */
 
-public abstract class BaseFragment extends Fragment implements View.OnClickListener {
+public abstract class BaseFragment extends Fragment{
     private View rootView;
     public RxManager mRxManager;
     private Unbinder mUnbinder;
@@ -53,7 +53,7 @@ public abstract class BaseFragment extends Fragment implements View.OnClickListe
         super.onDestroyView();
         Log.d(TAG, "*****" + Thread.currentThread().getStackTrace()[2].getMethodName() + "()*****");
         mUnbinder.unbind();
-        mRxManager.clear();
+        mRxManager.clear(this);
     }
 
     public void showToast(String message){

@@ -138,7 +138,7 @@ public abstract class BaseActivity extends AppCompatActivity implements View.OnC
         super.onDestroy();
         Log.d(TAG,"*****"+Thread.currentThread().getStackTrace()[2].getMethodName()+"()*****");
         mUnbinder.unbind();
-        mRxManager.clear();
+        mRxManager.clear(this);
     }
 
     /**

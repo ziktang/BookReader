@@ -39,6 +39,7 @@ public class MainActivity extends BaseActivity {
         mAdapter = new MainAdapter(getSupportFragmentManager(),mFragments,tabs);
         mPager.setAdapter(mAdapter);
         mTabLayout.setupWithViewPager(mPager);
+
     }
 
     /**

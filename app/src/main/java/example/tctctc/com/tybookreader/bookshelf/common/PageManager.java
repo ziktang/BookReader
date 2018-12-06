@@ -11,7 +11,6 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.os.BatteryManager;
 import android.support.annotation.DimenRes;
-import android.support.annotation.TransitionRes;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -26,7 +25,7 @@ import java.util.Date;
 import example.tctctc.com.tybookreader.BookApplication;
 import example.tctctc.com.tybookreader.R;
 import example.tctctc.com.tybookreader.bean.BookBean;
-import example.tctctc.com.tybookreader.bean.Directory;
+import example.tctctc.com.tybookreader.bean.Chapter;
 import example.tctctc.com.tybookreader.bean.MarkBean;
 import example.tctctc.com.tybookreader.bean.MarkBeanDao;
 import example.tctctc.com.tybookreader.bean.ReadConfigBean;
@@ -45,31 +44,46 @@ import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
-
-import static example.tctctc.com.tybookreader.bookshelf.model.BookDao.update;
+import vite.rxbus.RxThread;
+import vite.rxbus.Subscribe;
+import vite.rxbus.ThreadType;
 
 
 /**
  * Created by tctctc on 2017/4/3.
  * Function:阅读页面绘制管理
+ * @author tc
  */
 
 public class PageManager {
 
     public static final String TAG = "PageManager";
 
-    private static PageManager sPageManager;
-    //绘制内容提供者
+    /**
+     * 绘制内容提供者
+     */
     private ContentManager mContentManager;
-    //绘制的View
+    /**
+     * 绘制的View
+     */
     private ReadPageView mReadPageView;
     //阅读界面的配置
+
+    /**
+     *
+     */
     private ReadConfigBean mConfigBean;
 
     private Context mContext;
     //阅读状态
+    /**
+     *
+     */
     private ReadStatus mReadStatus;
     //要打开的书
+    /**
+     *
+     */
     private BookBean mBookBean;
 
     //这个页面的bitmap和下个页面的bitmap
@@ -77,72 +91,139 @@ public class PageManager {
 
     private Bitmap[] mBitmaps;
     //页面的宽和高
+    /**
+     *
+     */
     private int mWidth, mHeight;
     //正文内容的区域宽
+    /**
+     *
+     */
     private float mBodyWidth;
     //正文内容的区域高
+    /**
+     *
+     */
     private float mbodyHeight;
 
-    //状态画笔
+    /**
+     * 状态画笔
+     */
     private Paint mStatusPaint;
 
     private PageTxt mLastPageTxt;
     private PageTxt mCurPageTxt;
     private PageTxt mNextPageTxt;
 
-    //文字的行数
+    /**
+     *文字的行数
+     */
     private int lineNum;
-    //行间距
+
+    /**
+     *行间距
+     */
     private float lineSpace;
-    //字间距
-    private float fontSpace;
-    //段间距
-    private float paragraphSpace;
-    //正文与上下边界的距离
+
+    /**
+     *正文与上下边界的距离
+     */
     private float marginHeight;
-    //正文与左右边界的距离
+
+    /**
+     *正文与左右边界的距离
+     */
     private float marginWidth;
 
-    //正文与左右边界的测量距离
+    /**
+     *正文与左右边界的测量距离
+     */
     private float marginMeasureWidth;
-    //边界信息距离边界的高度
+
+    /**
+     *边界信息距离边界的高度
+     */
     private float marginBorderHeight;
-    //边界信息字体大小
+
+    /**
+     *边界信息字体大小
+     */
     private float borderFontSize;
-    //电池数据格式
+
+    /**
+     *电池数据格式
+     */
     private DecimalFormat mProgressDf;
-    //时间格式
+
+    /**
+     *时间格式
+     */
     private DateFormat mDateFormat;
-    //电池外框Rect
+
+
+    /**
+     *电池外框Rect
+     */
     private RectF mBtOuterRectF;
-    //电池进度Rect
+
+    /**
+     *电池进度Rect
+     */
     private RectF mBtInnerRectF;
 
-    //电池宽度
+    /**
+     *电池宽度
+     */
     private float btWidth;
 
-    //电池高度
+    /**
+     *电池高度
+     */
     private float btHeight;
-    //电池Intent
-    private Intent mBtIntent;
-    //边界信息的画笔 书籍名,章节名,时间,电池,进度
-    private Paint mBorderPaint;
-    //正文画笔
-    private Paint mPaint;
-    //背景bitmap
-    private Bitmap mBgBitmap;
-    //正文字体颜色
-    private int fontColor;
-    //字体类型
-    private Typeface mTypeface;
-    //字体大小
-    private float mFontSize;
-    //当前章节名
-    private String mCurChapterName = " ";
-    //当前书名
-    private String mBookName;
 
-    //时间字符串
+    /**
+     *电池Intent
+     */
+    private Intent mBtIntent;
+
+    /**
+     *边界信息的画笔 书籍名,章节名,时间,电池,进度
+     */
+    private Paint mBorderPaint;
+
+    /**
+     *正文画笔
+     */
+    private Paint mPaint;
+
+    /**
+     *背景bitmap
+     */
+    private Bitmap mBgBitmap;
+
+    /**
+     *正文字体颜色
+     */
+    private int fontColor;
+
+    /**
+     *字体类型
+     */
+    private Typeface mTypeface;
+
+    /**
+     *字体大小
+     */
+    private float mFontSize;
+
+    /**
+     *当前章节名
+     */
+    private String mCurChapterName = " ";
+
+    /**
+     *时间字符串
+     */
     private String dateStr;
     private PageEvent mPageEvent;
     private int batteryLevel;
@@ -182,8 +263,11 @@ public class PageManager {
                 mRxManager.post("length",1);
 
                 PageTxt pageTxt = mContentManager.getPageTxtForBegin(mBookBean.getProgress());
-                if (pageTxt == null) result = false;
-                else setCurrentPage(pageTxt);
+                if (pageTxt == null){
+                    result = false;
+                }else{
+                    setCurrentPage(pageTxt);
+                }
             }
 
             if (!result) {
@@ -206,11 +290,11 @@ public class PageManager {
     private BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction() == Intent.ACTION_BATTERY_CHANGED) {
+            if (Intent.ACTION_BATTERY_CHANGED.equals(intent.getAction())) {
                 batteryLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
                 updateBattery(batteryLevel);
             }
-            if (intent.getAction() == Intent.ACTION_TIME_TICK) {
+            if (Intent.ACTION_TIME_TICK.equals(intent.getAction())) {
                 updateTime();
             }
 
@@ -222,16 +306,11 @@ public class PageManager {
     private int nextPosition;
     private String progressStr;
 
-    public static PageManager getInstance(Context context, BookBean bookBean) {
-        if (sPageManager == null) {
-            sPageManager = new PageManager(context, bookBean);
-        }
-        return sPageManager;
-    }
 
-    private PageManager(Context context, BookBean bookBean) {
+    public PageManager(Context context, BookBean bookBean) {
         mContext = context;
         mRxManager = new RxManager();
+        mRxManager.registerBus(this);
         mBookBean = bookBean;
         mConfigBean = new ReadConfig(mContext).getConfigBean();
         mContentManager = ContentManager.init(this);
@@ -268,7 +347,7 @@ public class PageManager {
         mbodyHeight = mHeight - 2 * marginHeight;
 
         lineSpace = getResource(R.dimen.lineSpace);
-        paragraphSpace = getResource(R.dimen.paragraphSpace);
+//        paragraphSpace = getResource(R.dimen.paragraphSpace);
 
         setTypeFace(mConfigBean.getFontType());
 
@@ -304,24 +383,44 @@ public class PageManager {
         calculateLineNum();
         measureMarginWidth();
 
-        mRxManager.onEvent("chapter", new Consumer<Directory>() {
-            @Override
-            public void accept(@NonNull Directory directory) {
-                toChapter(directory.getStartPosition());
-            }
-        });
+//        mRxManager.onEvent("chapter", new Consumer<Directory>() {
+//            @Override
+//            public void accept(@NonNull Directory directory) {
+//                toChapter(directory.getStartPosition());
+//            }
+//        });
 
-        mRxManager.onEvent("mark", new Consumer<MarkBean>() {
-            @Override
-            public void accept(@NonNull MarkBean markBean) {
-                changeProgress(markBean.getPosition());
-            }
-        });
+//        mRxManager.onEvent("mark", new Consumer<MarkBean>() {
+//            @Override
+//            public void accept(@NonNull MarkBean markBean) {
+//                changeProgress(markBean.getPosition());
+//            }
+//        });
+    }
+
+
+    /**
+     * 跳转到章节
+     * @param chapter 章节
+     */
+    @Subscribe("chapter")
+    @RxThread(ThreadType.MainThread)
+    public void toChapter(Chapter chapter){
+        toChapter(chapter.getStartPosition());
+    }
+
+    /**
+     * 跳转到书签
+     * @param markBean 书签
+     */
+    @Subscribe("mark")
+    @RxThread(ThreadType.MainThread)
+    public void toMark(MarkBean markBean){
+        changeProgress(markBean.getPosition());
     }
 
     private float getResource(@DimenRes int res) {
-        float dp = mContext.getResources().getDimension(res);
-        return dp;
+        return mContext.getResources().getDimension(res);
     }
 
 
@@ -430,7 +529,7 @@ public class PageManager {
     }
 
 
-    public void setCurrentPage(PageTxt curPageTxt) {
+    private void setCurrentPage(PageTxt curPageTxt) {
         mCurPosition = 1;
         mCurPageTxt = curPageTxt;
         Log.i(TAG,"mContentManager:"+(mContentManager==null));
@@ -539,18 +638,22 @@ public class PageManager {
 
     public void lastChapter() {
         PageTxt pageTxt = mContentManager.getLastChapter();
-        if (pageTxt == null)
+        if (pageTxt == null){
             Toast.makeText(mContext, "已经是第一章了", Toast.LENGTH_SHORT).show();
-        else
+        }else{
             setCurrentPage(pageTxt);
+        }
 
     }
 
     public void toChapter(int position) {
         PageTxt pageTxt = mContentManager.getPageTxtForBegin(position);
         if (pageTxt == null) {
+            //...
+        } else{
+            setCurrentPage(pageTxt);
+        }
 
-        } else setCurrentPage(pageTxt);
     }
 
     public boolean bookMark() {
@@ -564,7 +667,7 @@ public class PageManager {
         } else {
             markBean = new MarkBean();
             markBean.setId(CustomUUId.get().nextId());
-            markBean.setTime(DateUtils.formatDateTime(mContext, new Date().getTime(), DateUtils.FORMAT_SHOW_YEAR));
+            markBean.setTime(DateUtils.formatDateTime(mContext, System.currentTimeMillis(), DateUtils.FORMAT_SHOW_YEAR));
             markBean.setBookName(mBookBean.getBookName());
             markBean.setBookId(mBookBean.getBookId());
             markBean.setPosition(mCurPageTxt.getStart());
@@ -573,8 +676,9 @@ public class PageManager {
             StringBuffer buffer = new StringBuffer();
             for (int i = 0; i < 3; i++) {
                 buffer.append(mCurPageTxt.getLines().get(i));
-                if (buffer.length() > 60)
+                if (buffer.length() > 60){
                     break;
+                }
             }
             markBean.setDescribe(buffer.toString());
             MarkDao.getInstance().insert(markBean);
@@ -659,6 +763,10 @@ public class PageManager {
             case ReadConfig.BG_NIGHT:
                 canvas.drawColor(mContext.getResources().getColor(R.color.read_night));
                 fontColor = mContext.getResources().getColor(R.color.follow_read_white);
+                break;
+            default:
+                canvas.drawColor(mContext.getResources().getColor(R.color.read_green));
+                fontColor = mContext.getResources().getColor(R.color.follow_read_black);
                 break;
         }
         mBgBitmap = bitmap;
@@ -792,14 +900,13 @@ public class PageManager {
     public void destroy() {
         BookDao.update(mBookBean);
         mContext.unregisterReceiver(mReceiver);
-        mRxManager.clear();
+        mRxManager.clear(this);
         mDisposable.dispose();
         mContentManager.destroy();
         mReadPageView = null;
         mPageEvent = null;
         mReceiver = null;
         mBtIntent = null;
-        sPageManager = null;
     }
 
     public enum ReadStatus {

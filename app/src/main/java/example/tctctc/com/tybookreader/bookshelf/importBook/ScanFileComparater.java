@@ -15,7 +15,7 @@ import example.tctctc.com.tybookreader.bean.ScanFile;
 public class ScanFileComparater extends BaseComparator<ScanFile>{
 
     @Override
-    int realCompare(ScanFile scanFile1, ScanFile scanFile2) {
+    protected int realCompare(ScanFile scanFile1, ScanFile scanFile2) {
 
         File file1 = scanFile1.getFile();
         File file2 = scanFile2.getFile();

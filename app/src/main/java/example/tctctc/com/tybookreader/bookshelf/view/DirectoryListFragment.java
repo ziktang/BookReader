@@ -2,10 +2,8 @@ package example.tctctc.com.tybookreader.bookshelf.view;
 
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +11,13 @@ import butterknife.BindView;
 import example.tctctc.com.tybookreader.R;
 import example.tctctc.com.tybookreader.base.BaseAdapter;
 import example.tctctc.com.tybookreader.base.BasePageFragment;
-import example.tctctc.com.tybookreader.bean.Directory;
+import example.tctctc.com.tybookreader.bean.Chapter;
 import example.tctctc.com.tybookreader.bookshelf.common.ContentManager;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
+import vite.rxbus.RxThread;
+import vite.rxbus.Subscribe;
+import vite.rxbus.ThreadType;
 
 /**
  * Created by tctctc on 2017/4/7.
@@ -25,7 +26,7 @@ import io.reactivex.functions.Consumer;
 
 public class DirectoryListFragment extends BasePageFragment {
 
-    private List<Directory> mDirectoryList;
+    private List<Chapter> mChapterList;
 
     private ContentManager mManager;
 
@@ -35,7 +36,7 @@ public class DirectoryListFragment extends BasePageFragment {
     @BindView(R.id.empty)
     TextView mEmpty;
 
-    private BaseAdapter<Directory> adapter;
+    private BaseAdapter<Chapter> adapter;
 
     private int mCurrentPosition;
     private int mLastPosition;
@@ -44,16 +45,17 @@ public class DirectoryListFragment extends BasePageFragment {
     @Override
     protected void initView() {
 //        setLazyLoad(false);
+        mRxManager.registerBus(this);
         mManager = ContentManager.getInstance();
-        mDirectoryList = new ArrayList<>();
+        mChapterList = new ArrayList<>();
         manager = new LinearLayoutManager(getContext());
         manager.setOrientation(LinearLayoutManager.VERTICAL);
-        adapter = new BaseAdapter<>(getContext(), R.layout.directory_item, mDirectoryList, new BaseAdapter.OnItem() {
+        adapter = new BaseAdapter<>(getContext(), R.layout.directory_item, mChapterList, new BaseAdapter.OnItem() {
             @Override
             public void onClick(int position) {
-                Directory directory = mDirectoryList.get(position);
-                mRxManager.post("chapter", directory);
-                mRxManager.post("close drawer", "");
+                Chapter chapter = mChapterList.get(position);
+                mRxManager.post("chapter", chapter);
+                mRxManager.post("closeDrawer", 1);
             }
 
             @Override
@@ -62,44 +64,69 @@ public class DirectoryListFragment extends BasePageFragment {
 
             @Override
             public void onBind(BaseAdapter.BaseViewHolder mHolder, int position) {
-                Directory directory = mDirectoryList.get(position);
+                Chapter chapter = mChapterList.get(position);
                 if (position == mCurrentPosition) {
-                    mHolder.setText(R.id.chapterName, directory.getName(), getResources().getColor(R.color.tab_text_color));
+                    mHolder.setText(R.id.chapterName, chapter.getName(), getResources().getColor(R.color.tab_text_color));
                 } else {
-                    mHolder.setText(R.id.chapterName, directory.getName(), getResources().getColor(R.color.black));
+                    mHolder.setText(R.id.chapterName, chapter.getName(), getResources().getColor(R.color.black));
                 }
             }
         });
         mRecyclerView.setAdapter(adapter);
         mRecyclerView.setLayoutManager(manager);
 
-        mRxManager.onEvent("Directory", new Consumer<Integer>() {
+//        mRxManager.onEvent("Directory", new Consumer<Integer>() {
+//
+//
+//            @Override
+//            public void accept(@NonNull Integer result) throws Exception {
+//                if (result == 1) {
+//                    judgeLoadData(true);
+//                    mEmpty.setVisibility(View.INVISIBLE);
+//                    mRecyclerView.setVisibility(View.VISIBLE);
+//                } else if (result == 2) {
+//                    //无法提取目录
+//                    mEmpty.setVisibility(View.VISIBLE);
+//                    mRecyclerView.setVisibility(View.INVISIBLE);
+//                }
+//            }
+//        });
+//        mRxManager.onEvent("updateCurrentChapter", new Consumer<Integer>() {
+//            @Override
+//            public void accept(@NonNull Integer result) {
+//                mLastPosition = mCurrentPosition;
+//                mCurrentPosition = result;
+//                adapter.notifyItemChanged(mLastPosition);
+//                adapter.notifyItemChanged(mCurrentPosition);
+//
+//                mRecyclerView.scrollToPosition(mCurrentPosition);
+//            }
+//        });
+    }
 
+    @Subscribe("Directory")
+    @RxThread(ThreadType.MainThread)
+    public void directoryChange(Integer result){
+        if (result == 1) {
+            judgeLoadData(true);
+            mEmpty.setVisibility(View.INVISIBLE);
+            mRecyclerView.setVisibility(View.VISIBLE);
+        } else if (result == 2) {
+            //无法提取目录
+            mEmpty.setVisibility(View.VISIBLE);
+            mRecyclerView.setVisibility(View.INVISIBLE);
+        }
+    }
 
-            @Override
-            public void accept(@NonNull Integer result) throws Exception {
-                if (result == 1) {
-                    judgeLoadData(true);
-                    mEmpty.setVisibility(View.INVISIBLE);
-                    mRecyclerView.setVisibility(View.VISIBLE);
-                } else if (result == 2) {
-                    //无法提取目录
-                    mEmpty.setVisibility(View.VISIBLE);
-                    mRecyclerView.setVisibility(View.INVISIBLE);
-                }
-            }
-        });
-        mRxManager.onEvent("updateCurrentChapter", new Consumer<Integer>() {
-            @Override
-            public void accept(@NonNull Integer result) {
-                mLastPosition = mCurrentPosition;
-                mCurrentPosition = result;
-                adapter.notifyItemChanged(mLastPosition);
-                adapter.notifyItemChanged(mCurrentPosition);
+    @Subscribe("updateCurrentChapter")
+    @RxThread(ThreadType.MainThread)
+    public void updateCurrentChapter(Integer result){
+        mLastPosition = mCurrentPosition;
+        mCurrentPosition = result;
+        adapter.notifyItemChanged(mLastPosition);
+        adapter.notifyItemChanged(mCurrentPosition);
 
-                mRecyclerView.scrollToPosition(mCurrentPosition);
-            }
-        });
+        mRecyclerView.scrollToPosition(mCurrentPosition);
     }
 
     @Override
@@ -109,11 +136,11 @@ public class DirectoryListFragment extends BasePageFragment {
 
     @Override
     public boolean fetchData() {
-        mDirectoryList.clear();
-        mDirectoryList.addAll(mManager.getDirectory());
+        mChapterList.clear();
+        mChapterList.addAll(mManager.getDirectory());
         adapter.notifyDataSetChanged();
 
-        if (mDirectoryList.isEmpty()) {
+        if (mChapterList.isEmpty()) {
             mEmpty.setVisibility(View.VISIBLE);
         } else {
             mEmpty.setVisibility(View.GONE);

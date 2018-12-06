@@ -22,7 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import example.tctctc.com.tybookreader.bean.BookBean;
-import example.tctctc.com.tybookreader.bean.Directory;
+import example.tctctc.com.tybookreader.bean.Chapter;
 import example.tctctc.com.tybookreader.bean.TxtCache;
 import example.tctctc.com.tybookreader.bookshelf.model.BookDao;
 import example.tctctc.com.tybookreader.utils.FileUtils;
@@ -51,7 +51,7 @@ public class ContentManager {
 
     private List<TxtCache> mTxtCaches = new ArrayList();
 
-    private List<Directory> mDirectoryList = new ArrayList();
+    private List<Chapter> mChapterList = new ArrayList();
 
     private String bookPath;
     private BookBean mBookBean;
@@ -152,7 +152,7 @@ public class ContentManager {
         int index = 0;
         int bookLength = 0;
 
-        mDirectoryList.clear();
+        mChapterList.clear();
         mTxtCaches.clear();
         String last = "";
         while (true) {
@@ -228,17 +228,17 @@ public class ContentManager {
             last = cacheSize * i - pre.length();
 
             while (matcher.find()) {
-                if (mDirectoryList.size() == 0) {
+                if (mChapterList.size() == 0) {
                     String s1 = content.substring(0, matcher.start());
                     if (s1.length() > 0) {
-                        mDirectoryList.add(new Directory("序", 0));
+                        mChapterList.add(new Chapter("序", 0));
                     }
                 }
                 String name = matcher.group();
                 name = name.substring(2, name.length() - 2);
-                Directory directory = new Directory(name, last + matcher.start());
-                directory.setPath(mBookBean.getPath());
-                mDirectoryList.add(directory);
+                Chapter chapter = new Chapter(name, last + matcher.start());
+                chapter.setPath(mBookBean.getPath());
+                mChapterList.add(chapter);
                 lastContent = matcher.end();
             }
 
@@ -475,34 +475,34 @@ public class ContentManager {
 
     public String getChapterName(int progress) {
         int chapter = -1;
-        for (int i = 0; i < mDirectoryList.size(); i++) {
-            if (progress >= mDirectoryList.get(i).getStartPosition()) {
+        for (int i = 0; i < mChapterList.size(); i++) {
+            if (progress >= mChapterList.get(i).getStartPosition()) {
                 chapter = i;
             }
         }
-        return chapter == -1?"":mDirectoryList.get(chapter).getName();
+        return chapter == -1?"": mChapterList.get(chapter).getName();
     }
 
     public void setCurrentChapter(int progress){
-        for (int i = 0; i < mDirectoryList.size(); i++) {
-            if (progress >= mDirectoryList.get(i).getStartPosition()) {
+        for (int i = 0; i < mChapterList.size(); i++) {
+            if (progress >= mChapterList.get(i).getStartPosition()) {
                 mCurrentChapter = i;
             }
         }
     }
 
     public PageTxt getNextChapter() {
-        if (mCurrentChapter >= mDirectoryList.size() - 1) return null;
-        return getPageTxtForBegin(mDirectoryList.get(++mCurrentChapter).getStartPosition());
+        if (mCurrentChapter >= mChapterList.size() - 1) return null;
+        return getPageTxtForBegin(mChapterList.get(++mCurrentChapter).getStartPosition());
     }
 
     public PageTxt getLastChapter() {
         if (mCurrentChapter <= 0) return null;
-        return getPageTxtForBegin(mDirectoryList.get(--mCurrentChapter).getStartPosition());
+        return getPageTxtForBegin(mChapterList.get(--mCurrentChapter).getStartPosition());
     }
 
-    public List<Directory> getDirectory() {
-        return mDirectoryList;
+    public List<Chapter> getDirectory() {
+        return mChapterList;
     }
 
 
@@ -541,8 +541,8 @@ public class ContentManager {
             return block[mPosition];
         }
 
-        public List<Directory> getDirectoryList() {
-            return mDirectoryList;
+        public List<Chapter> getDirectoryList() {
+            return mChapterList;
         }
 
         public void setProgress(int progress) {

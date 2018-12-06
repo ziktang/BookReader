@@ -36,6 +36,9 @@ import example.tctctc.com.tybookreader.view.CustomDrawerLayout;
 import example.tctctc.com.tybookreader.view.ReadPageView;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
+import vite.rxbus.RxThread;
+import vite.rxbus.Subscribe;
+import vite.rxbus.ThreadType;
 
 public class ReadBookActivity extends BaseActivity implements ReadPageView.onTouchListener {
 
@@ -82,12 +85,14 @@ public class ReadBookActivity extends BaseActivity implements ReadPageView.onTou
     protected void initView(View contextView) {
         Log.d(TAG, "*****" + Thread.currentThread().getStackTrace()[2].getMethodName() + "()*****");
 
+        mRxManager.registerBus(this);
+
         mBookBean = (BookBean) getIntent().getSerializableExtra("book");
 
         mConfig = new ReadConfig(this);
 
         mDialogManager = DialogManager.getInstance(this, mBookBean, mView);
-        mPageManager = PageManager.getInstance(this, mBookBean);
+        mPageManager = new PageManager(this, mBookBean);
         mDialogManager.setPageManager(mPageManager);
 
 
@@ -103,31 +108,50 @@ public class ReadBookActivity extends BaseActivity implements ReadPageView.onTou
         initDrawer();
         initTopDialog();
 
-        mRxManager.onEvent("close drawer", new Consumer<String>() {
-            @Override
-            public void accept(@NonNull String s) {
-                mDrawer.closeDrawers();
-            }
-        });
+//        mRxManager.onEvent("close drawer", new Consumer<String>() {
+//            @Override
+//            public void accept(@NonNull String s) {
+//                mDrawer.closeDrawers();
+//            }
+//        });
+//
+//        mRxManager.onEvent("open drawer", new Consumer<Object>() {
+//            @Override
+//            public void accept(@NonNull Object o) {
+//                mDrawer.openDrawer(GravityCompat.START);
+//                onCenter();
+//            }
+//        });
+//
+//        mRxManager.onEvent("pageTurn", new Consumer<Integer>() {
+//            @Override
+//            public void accept(@NonNull Integer type) throws Exception {
+//                mReadPageView.setPageMode(type);
+//            }
+//        });
+    }
 
-        mRxManager.onEvent("open drawer", new Consumer<Object>() {
-            @Override
-            public void accept(@NonNull Object o) {
-                mDrawer.openDrawer(GravityCompat.START);
-                onCenter();
-            }
-        });
+    @Subscribe("closeDrawer")
+    @RxThread(ThreadType.MainThread)
+    public void closeDrawer(int value){
+        mDrawer.closeDrawers();
+    }
 
-        mRxManager.onEvent("pageTurn", new Consumer<Integer>() {
-            @Override
-            public void accept(@NonNull Integer type) throws Exception {
-                mReadPageView.setPageMode(type);
-            }
-        });
+    @Subscribe("openDrawer")
+    @RxThread(ThreadType.MainThread)
+    public void openDrawer(int value){
+        mDrawer.openDrawer(GravityCompat.START);
+        onCenter();
+    }
+
+    @Subscribe("pageTurn")
+    @RxThread(ThreadType.MainThread)
+    public void pageTurn(Integer type){
+        mReadPageView.setPageMode(type);
     }
 
     private void initDrawer() {
-        mDrawer = (CustomDrawerLayout) findViewById(R.id.drawer);
+        mDrawer = findViewById(R.id.drawer);
         mDrawer.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {

@@ -83,8 +83,8 @@ public class ShelfFragment extends BaseFragment implements ShelfBookAdapter.OnCl
     }
 
 
+
     @OnClick({R.id.add_book})
-    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.add_book:

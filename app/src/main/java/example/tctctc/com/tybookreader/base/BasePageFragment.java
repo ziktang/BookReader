@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import example.tctctc.com.tybookreader.common.rx.RxManager;
@@ -99,6 +98,6 @@ public abstract class BasePageFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         mUnbinder.unbind();
-        mRxManager.clear();
+        mRxManager.clear(this);
     }
 }

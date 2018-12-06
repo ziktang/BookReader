@@ -9,7 +9,7 @@ public class BookComparater {
     public static class BooleanComparater extends BaseComparator<Boolean>{
 
         @Override
-        int realCompare(Boolean t1, Boolean t2) {
+        protected int realCompare(Boolean t1, Boolean t2) {
             if (t1 && t2) {
                 return 0;
             } else if (t1 && !t2) {
@@ -24,7 +24,7 @@ public class BookComparater {
 
     public static class LongComparater extends BaseComparator<Long>{
         @Override
-        int realCompare(Long t1, Long t2) {
+        protected int realCompare(Long t1, Long t2) {
             if (t1 > t2) {
                 return -1;
             } else if (t1 < t2) {
@@ -38,7 +38,7 @@ public class BookComparater {
     public static class StringHeadCharComparater extends BaseComparator<String>{
 
         @Override
-        int realCompare(String t1, String t2) {
+        protected int realCompare(String t1, String t2) {
             return t1.compareTo(t2);
         }
     }

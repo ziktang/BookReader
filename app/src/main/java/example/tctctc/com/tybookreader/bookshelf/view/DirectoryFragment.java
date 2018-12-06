@@ -58,8 +58,4 @@ public class DirectoryFragment extends BaseFragment {
         return R.layout.fragment_directory;
     }
 
-    @Override
-    public void onClick(View v) {
-
-    }
 }
